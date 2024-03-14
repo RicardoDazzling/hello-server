@@ -1,0 +1,33 @@
+{
+    "name": "ricar/hello-server",
+    "description": "Backend API for Hello App that will be futurally developed",
+    "require": {
+        "php": "^8.3.3",
+        "firebase/php-jwt": "^6.10",
+        "respect/validation": "^2.3",
+        "ph-7/php-http-response-header": "^1.0",
+        "ph-7/just-http-status-codes": "^1.1",
+        "ramsey/uuid": "^4.7",
+        "gabordemooij/redbean": "^5.7",
+        "vlucas/phpdotenv": "^5.6",
+        "filp/whoops": "^2.15"
+    },
+    "license": "mit",
+    "autoload": {
+        "psr-4": {
+            "Ricar\\HelloServer\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Ricardo Állan Costa",
+            "email": "118565541+RicardoDazzling@users.noreply.github.com"
+        }
+    ],
+
+    "config": {
+        "platform": {
+            "php": "8.2.0"
+        }
+    }
+}

@@ -3,10 +3,11 @@ namespace DazzRick\HelloServer;
 
 use DazzRick\HelloServer\Exceptions\ValidationException;
 
+use DazzRick\HelloServer\Services\UserService;
 use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
 
-require_once dirname(__DIR__) . '/endpoints/user.php';
+require_once dirname(__DIR__) . '/services/user.php';
 
 // PHP 8.1 enums
 enum UserAction: string
@@ -23,32 +24,35 @@ enum UserAction: string
         $postBody = json_decode($postBody);
 
         // Null coalescing operator
-        $id = $_REQUEST['id'] ?? null;
+        $uuid = $_REQUEST['uuid'] ?? null;
 
         // TODO Remove the hard-coded values from here
-        $user = new UserEndPoint();
+        $user = new UserService();
 
         try {
             $response = match ($this) {
                 self::CREATE => $user->create($postBody),
                 self::RETRIEVE_ALL => $user->retrieve_all(),
-                self::RETRIEVE => $user->retrieve($id),
-                self::REMOVE => $user->remove($id),
+                self::RETRIEVE => $user->retrieve($uuid),
+                self::REMOVE => $user->remove($postBody),
                 self::UPDATE => $user->update($postBody),
             };
-            switch ($this)
+            if (http_response_code() === StatusCode::OK)
             {
-                case self::CREATE:
-                    Http::setHeadersByCode(StatusCode::CREATED);
-                    break;
-                case self::RETRIEVE_ALL || self::RETRIEVE:
-                    Http::setHeadersByCode(StatusCode::OK);
-                    break;
-                case self::REMOVE:
-                    Http::setHeadersByCode(StatusCode::NO_CONTENT);
-                    break;
-                case self::UPDATE:
-                    Http::setHeadersByCode(StatusCode::ACCEPTED);
+                switch ($this)
+                {
+                    case self::CREATE:
+                        Http::setHeadersByCode(StatusCode::CREATED);
+                        break;
+                    //case self::RETRIEVE_ALL || self::RETRIEVE:
+                    //    Http::setHeadersByCode(StatusCode::OK);
+                    //    break;
+                    case self::REMOVE:
+                        Http::setHeadersByCode(StatusCode::NO_CONTENT);
+                        break;
+                    case self::UPDATE:
+                        Http::setHeadersByCode(StatusCode::ACCEPTED);
+                }
             }
         } catch (ValidationException $e) {
             // Send 400 http status code

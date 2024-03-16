@@ -13,11 +13,11 @@ class UserValidation
 
     public function __construct(private readonly mixed $data) {}
 
-    public function isCreationSchemaValid(): bool
+    public function isCreationSchemaValid(bool $mandatory = true): bool
     {
         // validation schema
         $schemaValidation = v::attribute('name', v::stringType()->length(
-            self::MINIMUM_NAME_LENGTH, self::MAXIMUM_NAME_LENGTH));
+            self::MINIMUM_NAME_LENGTH, self::MAXIMUM_NAME_LENGTH), mandatory: $mandatory);
         if (empty($this->data->name))
         {
             throw new ValidationException('Name is empty.');
@@ -28,13 +28,13 @@ class UserValidation
                 self::MINIMUM_NAME_LENGTH, self::MAXIMUM_NAME_LENGTH));
         }
 
-        $schemaValidation = $schemaValidation->attribute('email', v::email(), mandatory: false);
+        $schemaValidation = $schemaValidation->attribute('email', v::email(), mandatory: $mandatory);
         if (!$schemaValidation->validate($this->data))
         {
             throw new ValidationException('Invalid Email.');
         }
 
-        $schemaValidation = $schemaValidation->attribute('phone', v::phone(), mandatory: false);
+        $schemaValidation = $schemaValidation->attribute('phone', v::phone(), mandatory: $mandatory);
         if (!$schemaValidation->validate($this->data))
         {
             throw new ValidationException('Invalid Phone.');
@@ -46,6 +46,15 @@ class UserValidation
     public function isUpdateSchemaValid(): bool
     {
         // same schema for both creation and update
-        return $this->isCreationSchemaValid();
+        if (!self::isRemoveSchemaValid())
+        {
+            throw new ValidationException('Invalid uuid.');
+        }
+        return $this->isCreationSchemaValid(false);
+    }
+
+    public function isRemoveSchemaValid(): bool
+    {
+        return v::attribute('uuid', v::uuid())->validate($this->data);
     }
 }

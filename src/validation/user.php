@@ -45,11 +45,6 @@ class UserValidation
 
     public function isUpdateSchemaValid(): bool
     {
-        // same schema for both creation and update
-        if (!self::isRemoveSchemaValid())
-        {
-            throw new ValidationException('Invalid uuid.');
-        }
         return $this->isCreationSchemaValid(false);
     }
 

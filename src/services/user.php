@@ -7,18 +7,17 @@ use DazzRick\HelloServer\Validation\UserValidation;
 use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
 use Ramsey\Uuid\Uuid;
-use RedBeanPHP\RedException\SQL;
 use Respect\Validation\Validator as v;
 
 class UserService
 {
-    public const DATE_TIME_FORMAT = 'Y-m-d H:i:s';
+    public const string DATE_TIME_FORMAT = 'Y-m-d H:i:s';
 
     public function create(mixed $data): array|User
     {
         $userValidation = new UserValidation($data);
         if ($userValidation->isCreationSchemaValid()) {
-            $userUuid = Uuid::uuid4(); // assigning a UUID to the user
+            $userUuid = Uuid::uuid4()->toString();
 
             $user = new User();
             $user
@@ -31,17 +30,13 @@ class UserService
                 ->setDefault($data->default)
                 ->setCreationDate(date(self::DATE_TIME_FORMAT));
 
-            try {
-                UserDal::create($user);
-            } catch (SQL $exception) {
-                // Set an internal error when we cannot add an entry to the database
+            if (UserDAL::create($user) === false) {
                 Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
 
-                // Set to empty result, because an issue happened. The client has to handle this properly
-                $data = [];
+                return [];
             }
 
-            return $data;
+            return $user;
         }
 
         // line never accessed, if schema is invalid a "ValidationException" is created.
@@ -50,7 +45,7 @@ class UserService
 
     public function retrieve_all(): array
     {
-        $users = UserDal::getAll();
+        $users = UserDAL::getAll();
 
         return array_map(function (object $user): object {
             // Remove unnecessary "id" field
@@ -65,7 +60,7 @@ class UserService
     {
 
         if (v::uuid()->validate($uuid)) {
-            if ($user = UserDal::get($uuid)) {
+            if ($user = UserDAL::get($uuid)) {
                 // Removing fields we don't want to expose
                 unset($user['id']);
 
@@ -78,13 +73,17 @@ class UserService
         throw new ValidationException("Invalid user UUID");
     }
 
-    public function update(mixed $postBody): array|User
+    public function update(mixed $postBody, string $uuid): array|User
     {
+        if (!(v::uuid()->validate($uuid)))
+        {
+            throw new ValidationException("Invalid user UUID");
+        }
+
         // validation schema
         $userValidation = new UserValidation($postBody);
-        if ($userValidation->isUpdateSchemaValid()) {
-            $uuid = $postBody->uuid;
-
+        if ($userValidation->isUpdateSchemaValid())
+        {
             $user = new User();
             if (!empty($postBody->name)) {
                 $user->setName($postBody->name);
@@ -102,22 +101,32 @@ class UserService
                 $user->setDefault($postBody->default);
             }
 
-            $result = UserDal::update($uuid, $user);
-            if ($result) {
-                return $postBody;
+            if (UserDAL::update($uuid, $user) === false) {
+                Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
+                return [];
             }
 
-            return [];
+            return $postBody;
         }
 
         throw new ValidationException("Invalid user payload");
     }
 
-    public function remove(mixed $data): bool
+    public function remove(?string $uuid): array|true
     {
-        $userValidation = new UserValidation($data);
-        if ($userValidation->isRemoveSchemaValid()) {
-            return UserDal::remove($data->userUuid);
+        if(is_null($uuid)){
+            throw new ValidationException("UUID is required.");
+        }
+        if (v::uuid()->validate($uuid)) {
+            $result = UserDAL::remove($uuid);
+            if ($result === null){
+                throw new ValidationException("Unknown user.");
+            }
+            if ($result === false){
+                Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
+                return [];
+            }
+            return true;
         }
         throw new ValidationException("Invalid user UUID");
     }

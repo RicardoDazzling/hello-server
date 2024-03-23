@@ -4,15 +4,16 @@ namespace DazzRick\HelloServer\DAL;
 
 use DazzRick\HelloServer\Entity\User;
 use RedBeanPHP\R;
+use RedBeanPHP\RedException\SQL;
 
 final class UserDAL
 {
     public const string TABLE_NAME = 'users';
 
     /**
-     * @throws \RedBeanPHP\RedException\SQL
+     * @throws SQL
      */
-    public static function create(User $userEntity): int|string
+    public static function create(User $userEntity): int|string|false
     {
         $bean = R::dispense(self::TABLE_NAME);
         $bean->uuid = $userEntity->getUuid();
@@ -49,7 +50,7 @@ final class UserDAL
         return R::findAll(self::TABLE_NAME);
     }
 
-    public static function remove(string $uuid): bool
+    public static function remove(string $uuid): ?bool
     {
         $bean = self::_find($uuid);
 
@@ -57,10 +58,10 @@ final class UserDAL
             return (bool)R::trash($bean);
         }
 
-        return false;
+        return null;
     }
 
-    public static function update(string $uuid, User $user): int|string
+    public static function update(string $uuid, User $user): int|string|false
     {
         $userBean = self::_find($uuid);
 

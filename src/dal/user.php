@@ -3,6 +3,7 @@
 namespace DazzRick\HelloServer\DAL;
 
 use DazzRick\HelloServer\Entity\User;
+use DazzRick\HelloServer\Exceptions\ValidationException;
 use RedBeanPHP\R;
 use RedBeanPHP\RedException\SQL;
 
@@ -13,23 +14,29 @@ final class UserDAL
     /**
      * @throws SQL
      */
-    public static function create(User $userEntity): int|string|false
+    public static function create(User $entity): User
     {
+        if(!is_null(self::get_by_email($entity->getEmail())))
+        {
+            throw new ValidationException("EMail already exists.");
+        }
         $bean = R::dispense(self::TABLE_NAME);
-        $bean->uuid = $userEntity->getUuid();
-        $bean->status = $userEntity->getStatus();
-        $bean->target = $userEntity->getTarget();
-        $bean->name = $userEntity->getName();
-        $bean->email = $userEntity->getEmail();
-        $bean->phone = $userEntity->getPhone();
-        $bean->default = $userEntity->getDefault();
-        $bean->created_date = $userEntity->getCreationDate();
+        $bean->uuid = $entity->getUuid();
+        $bean->status = $entity->getStatus();
+        $bean->name = $entity->getName();
+        $bean->email = $entity->getEmail();
+        $bean->default = $entity->getDefault();
+        $bean->created_date = $entity->getCreationDate();
 
         $id = R::store($bean);
 
         R::close();
 
-        return $id;
+        if (gettype($id) === 'integer' || gettype($id) === 'string')
+        {
+            return $entity->setId($id);
+        }
+        return new User();
     }
     
     private static function _find(string $uuid): NULL|\RedBeanPHP\OODBBean
@@ -38,61 +45,104 @@ final class UserDAL
         return R::findOne(self::TABLE_NAME, 'uuid = :uuid ', $bindings);
     }
 
-    public static function get(string $uuid): ?array
+    public static function get(string $uuid): User
     {
         $bean = self::_find($uuid);
 
-        return $bean?->export();
+        if(is_null($bean))
+        {
+            return new User();
+        }
+        return (new User())->setData($bean->export());
     }
 
+    public static function get_by_email(string $email): User
+    {
+        $bindings = ['email' => $email];
+        $bean = R::findOne(self::TABLE_NAME, 'email = :email ', $bindings);
+
+        if(is_null($bean))
+        {
+            return new User();
+        }
+        return (new User())->setData($bean->export());
+    }
+
+
+    /**
+     * @return User[]|null[]
+     */
     public static function getAll(): array
     {
-        return R::findAll(self::TABLE_NAME);
+        $users = R::findAll(self::TABLE_NAME);
+        if (count($users) <= 0)
+        {
+            return [];
+        }
+        return array_map(function (object $bean): object {
+            return (new User())->setData($bean->export());
+        }, $users);
     }
 
-    public static function remove(string $uuid): ?bool
+    /**
+     * @throws SQL
+     */
+    public static function remove(string $uuid): User
     {
         $bean = self::_find($uuid);
 
-        if ($bean) {
-            return (bool)R::trash($bean);
+        if (is_null($bean))
+        {
+            return new User();
         }
 
-        return null;
+        $entity = (new User())->setData($bean->export());
+        $works = (bool)R::trash($bean);
+
+        if ($works)
+        {
+            return $entity;
+        }
+        throw new SQL('Remove error!');
     }
 
-    public static function update(string $uuid, User $user): int|string|false
+    /**
+     * @throws SQL
+     */
+    public static function update(User $entity): User
     {
-        $userBean = self::_find($uuid);
+        $bean = self::_find($entity->getUuid());
 
         // If the user exists, update it
-        if ($userBean) {
-            $name = $user->getName();
-            $status = $user->getStatus();
-            $target = $user->getTarget();
-            $default = $user->getDefault();
-
-
-            if ($name) {
-                $userBean->name = $name;
-            }
-
-            if ($status) {
-                $userBean->status = $status;
-            }
-
-            if ($target) {
-                $userBean->target = $target;
-            }
-
-            if ($default) {
-                $userBean->default = $default;
-            }
-
-            // save the user
-            return R::store($userBean);
+        if (is_null($bean)) {
+            return new User();
         }
 
-        return 0;
+        $name = $entity->getName();
+        $status = $entity->getStatus();
+        $default = $entity->getDefault();
+
+
+        if ($name) {
+            $bean->name = $name;
+        }
+
+        if ($status) {
+            $bean->status = $status;
+        }
+
+        if ($default) {
+            $bean->default = $default;
+        }
+
+        // save the user
+        $id = R::store($bean);
+
+        if(gettype($id) === 'integer' || gettype($id) === 'string')
+        {
+            return $entity->setId($id);
+        }
+
+        return new User();
     }
 }

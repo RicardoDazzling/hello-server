@@ -1,5 +1,6 @@
 <?php
 namespace DazzRick\HelloServer\Services;
+
 use DazzRick\HelloServer\DAL\UserDAL;
 use DazzRick\HelloServer\Entity\User;
 use DazzRick\HelloServer\Exceptions\ValidationException;
@@ -7,13 +8,12 @@ use DazzRick\HelloServer\Validation\UserValidation;
 use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
 use Ramsey\Uuid\Uuid;
+use RedBeanPHP\RedException\SQL;
 use Respect\Validation\Validator as v;
 
-class UserService
+class UserService implements Serviceable
 {
-    public const string DATE_TIME_FORMAT = 'Y-m-d H:i:s';
-
-    public function create(mixed $data): array|User
+    public function create(mixed $data): User
     {
         $userValidation = new UserValidation($data);
         if ($userValidation->isCreationSchemaValid()) {
@@ -23,17 +23,15 @@ class UserService
             $user
                 ->setUuid($userUuid)
                 ->setStatus($data->status)
-                ->setTarget($data->target)
                 ->setName($data->first)
                 ->setEmail($data->email)
-                ->setPhone($data->phone)
                 ->setDefault($data->default)
                 ->setCreationDate(date(self::DATE_TIME_FORMAT));
 
-            if (UserDAL::create($user) === false) {
+            if (($user = UserDAL::create($user))->isEmpty()) {
                 Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
 
-                return [];
+                $user = new User();
             }
 
             return $user;
@@ -46,34 +44,34 @@ class UserService
     public function retrieve_all(): array
     {
         $users = UserDAL::getAll();
-
-        return array_map(function (object $user): object {
-            // Remove unnecessary "id" field
-            unset($user['id']);
-            return $user;
+        if(count($users) <= 0)
+        {
+            return [];
+        }
+        return array_map(function (User $user): array {
+            return $user->data;
         }, $users);
     }
 
 
 
-    public function retrieve(string $uuid): array
+    public function retrieve(string $uuid): User
     {
 
-        if (v::uuid()->validate($uuid)) {
-            if ($user = UserDAL::get($uuid)) {
-                // Removing fields we don't want to expose
-                unset($user['id']);
-
-                return $user;
-            }
-            Http::setHeadersByCode(StatusCode::NOT_FOUND);
-            return [];
+        if (!v::uuid()->validate($uuid)) {
+            throw new ValidationException("Invalid user UUID");
         }
 
-        throw new ValidationException("Invalid user UUID");
+        $user = UserDAL::get($uuid);
+
+        if ($user->isEmpty()) {
+            Http::setHeadersByCode(StatusCode::NOT_FOUND);
+        }
+
+        return $user;
     }
 
-    public function update(mixed $postBody, string $uuid): array|User
+    public function update(mixed $postBody, string $uuid): User
     {
         if (!(v::uuid()->validate($uuid)))
         {
@@ -82,52 +80,41 @@ class UserService
 
         // validation schema
         $userValidation = new UserValidation($postBody);
-        if ($userValidation->isUpdateSchemaValid())
+
+        if (!$userValidation->isUpdateSchemaValid())
         {
-            $user = new User();
-            if (!empty($postBody->name)) {
-                $user->setName($postBody->name);
-            }
-
-            if (!empty($postBody->status)) {
-                $user->setStatus($postBody->status);
-            }
-
-            if (!empty($postBody->target)) {
-                $user->setTarget($postBody->target);
-            }
-
-            if (!empty($postBody->default)) {
-                $user->setDefault($postBody->default);
-            }
-
-            if (UserDAL::update($uuid, $user) === false) {
-                Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
-                return [];
-            }
-
-            return $postBody;
+            throw new ValidationException("Invalid user payload");
         }
 
-        throw new ValidationException("Invalid user payload");
+        $user = (new User())->setData($postBody);
+        $user->setUuid($uuid);
+        $user = UserDAL::update($user);
+
+        if ($user->isEmpty()) {
+            Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+        return $user;
     }
 
-    public function remove(?string $uuid): array|true
+    public function remove(?string $uuid): User
     {
         if(is_null($uuid)){
             throw new ValidationException("UUID is required.");
         }
-        if (v::uuid()->validate($uuid)) {
-            $result = UserDAL::remove($uuid);
-            if ($result === null){
+        if (!v::uuid()->validate($uuid)) {
+            throw new ValidationException("Invalid user UUID");
+        }
+        try {
+            $entity = UserDAL::remove($uuid);
+            if ($entity->isEmpty()){
                 throw new ValidationException("Unknown user.");
             }
-            if ($result === false){
-                Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
-                return [];
-            }
-            return true;
+            return $entity;
         }
-        throw new ValidationException("Invalid user UUID");
+        catch (SQL $e)
+        {
+            Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
+            return new User();
+        }
     }
 }

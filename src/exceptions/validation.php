@@ -2,8 +2,8 @@
 
 namespace DazzRick\HelloServer\Exceptions;
 
-use RuntimeException;
+use InvalidArgumentException;
 
-class ValidationException extends RuntimeException
+class ValidationException extends InvalidArgumentException
 {
 }

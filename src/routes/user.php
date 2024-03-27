@@ -1,7 +1,8 @@
 <?php
 namespace DazzRick\HelloServer;
 
-use DazzRick\HelloServer\Exceptions\NotFoundException;
+use DazzRick\HelloServer\dal\TokenDAL;
+use DazzRick\HelloServer\Exceptions\MethodNotAllowedException;
 use DazzRick\HelloServer\Exceptions\ValidationException;
 use DazzRick\HelloServer\Services\UserService;
 use PH7\JustHttp\StatusCode;
@@ -13,40 +14,29 @@ enum UserAction: string
 {
     case POST = 'POST';
     case GET = 'GET';
-    case DELETE = 'DELETE';
 
     public function getResponse(): string
     {
         $postBody = file_get_contents('php://input');
-        $postBody = json_decode($postBody);
+        $postBody = json_decode($postBody, true);
 
-        $uuid = $_REQUEST['uuid'] ?? null;
+        $token = $_REQUEST['token'] ?? null;
+        $tokenEntity = TokenDAL::validate($token);
+        $uuid = $tokenEntity->getUuid();
 
         $user = new UserService();
+
+        $response = [];
 
         try {
             $statusCode = StatusCode::OK;
             switch ($this){
                 case self::POST:
-                    if (is_null($uuid))
-                    {
-                        $statusCode = StatusCode::CREATED;
-                        $response = $user->create($postBody);
-                        break;
-                    }
-                    $response = $user->update($postBody, $uuid);
+                    $response = $user->update($postBody, $uuid)->getData();
                     break;
                 case self::GET:
-                    if (is_null($uuid))
-                    {
-                        $response = $user->retrieve_all();
-                        break;
-                    }
-                    $response = $user->retrieve($uuid);
+                    $response = $user->retrieve($uuid)->getData();
                     break;
-                case self::DELETE:
-                    $statusCode = StatusCode::NO_CONTENT;
-                    $user->remove($uuid);
             }
             if (http_response_code() === StatusCode::OK)
             {
@@ -74,8 +64,8 @@ enum UserAction: string
 $userAction = match ($_SERVER['REQUEST_METHOD']) {
     'POST' => UserAction::POST, // send 201
     'GET' => UserAction::GET, // send 200
-    'DELETE' => UserAction::DELETE, // send 204 status code
-    default => throw new NotFoundException(), // send 200
+    //'DELETE' => UserAction::DELETE, // send 204 status code
+    default => throw new MethodNotAllowedException(), // send 405
 };
 
 

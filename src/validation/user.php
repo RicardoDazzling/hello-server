@@ -47,9 +47,4 @@ class UserValidation
     {
         return $this->isCreationSchemaValid(false);
     }
-
-    public function isRemoveSchemaValid(): bool
-    {
-        return v::attribute('uuid', v::uuid())->validate($this->data);
-    }
 }

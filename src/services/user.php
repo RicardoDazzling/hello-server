@@ -13,32 +13,24 @@ use Respect\Validation\Validator as v;
 
 class UserService implements Serviceable
 {
-    public function create(mixed $data): User
+    public function create(array $data): User
     {
-        $userValidation = new UserValidation($data);
-        if ($userValidation->isCreationSchemaValid()) {
-            $userUuid = Uuid::uuid4()->toString();
+        UserValidation::isCreationSchemaValid($data);
 
-            $user = new User();
-            $user
-                ->setUuid($userUuid)
-                ->setStatus($data->status)
-                ->setName($data->first)
-                ->setEmail($data->email)
-                ->setDefault($data->default)
-                ->setCreationDate(date(self::DATE_TIME_FORMAT));
+        $user = new User();
+        $user
+            ->setUuid(Uuid::uuid4()->toString())
+            ->setStatus($data['status'])
+            ->setName($data['first'])
+            ->setEmail($data['email'])
+            ->setDefault($data['default'])
+            ->setCreationDate(date(self::DATE_TIME_FORMAT));
 
-            if (($user = UserDAL::create($user))->isEmpty()) {
-                Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
-
-                $user = new User();
-            }
-
-            return $user;
+        $user = UserDAL::create($user);
+        if ($user->isEmpty()) {
+            Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
         }
-
-        // line never accessed, if schema is invalid a "ValidationException" is created.
-        throw new ValidationException("Invalid user payload");
+        return $user;
     }
 
     public function retrieve_all(): array
@@ -49,7 +41,7 @@ class UserService implements Serviceable
             return [];
         }
         return array_map(function (User $user): array {
-            return $user->data;
+            return $user->getData();
         }, $users);
     }
 
@@ -57,7 +49,6 @@ class UserService implements Serviceable
 
     public function retrieve(string $uuid): User
     {
-
         if (!v::uuid()->validate($uuid)) {
             throw new ValidationException("Invalid user UUID");
         }
@@ -71,20 +62,13 @@ class UserService implements Serviceable
         return $user;
     }
 
-    public function update(mixed $postBody, string $uuid): User
+    public function update(array $postBody, string $uuid): User
     {
         if (!(v::uuid()->validate($uuid)))
         {
             throw new ValidationException("Invalid user UUID");
         }
-
-        // validation schema
-        $userValidation = new UserValidation($postBody);
-
-        if (!$userValidation->isUpdateSchemaValid())
-        {
-            throw new ValidationException("Invalid user payload");
-        }
+        UserValidation::isUpdateSchemaValid($postBody);
 
         $user = (new User())->setData($postBody);
         $user->setUuid($uuid);
@@ -111,7 +95,7 @@ class UserService implements Serviceable
             }
             return $entity;
         }
-        catch (SQL $e)
+        catch (SQL)
         {
             Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
             return new User();

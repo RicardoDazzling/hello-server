@@ -14,6 +14,7 @@ try
         'login' => require_once 'login.php',
         'register' => require_once 'register.php',
         'user' => require_once 'user.php',
+        'message' => require_once 'message.php',
         default => throw new NotFoundException(),
     };
 }

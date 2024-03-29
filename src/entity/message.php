@@ -165,7 +165,15 @@ class Message implements Entitable
         }
         if(!empty($this->_send))
         {
-            $array['time'] = $this->_send;
+            $array['send'] = $this->_send;
+        }
+        if(!empty($this->_received))
+        {
+            $array['received'] = $this->_received;
+        }
+        if(!empty($this->_read))
+        {
+            $array['read'] = $this->_read;
         }
         return $array;
     }

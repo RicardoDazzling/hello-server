@@ -3,54 +3,37 @@
 namespace DazzRick\HelloServer\DAL;
 
 use DazzRick\HelloServer\Entity\Message;
-use DazzRick\HelloServer\Exceptions\ValidationException;
-use RedBeanPHP\R;
+use RedBeanPHP\RedException;
 use RedBeanPHP\RedException\SQL;
 
-class MessageDAL
+class MessageDAL extends BaseDAL
 {
     public const string TABLE_NAME = 'message';
+    public const array COLUMNS = ['uuid', 'from', 'to', 'content', 'send', 'received', 'read'];
+    public const array ALLOW_UPDATE_COLUMNS = ['content', 'received', 'read'];
+    public const string TIME = 'month'; # month === 2592000s ; week === 604800s
 
-    /**
-     * @throws SQL
-     */
-    public static function create(Message $entity): Message
+    public static function populatedEntity(array $data): Message
     {
-        $bean = R::dispense(self::TABLE_NAME);
-        $bean->uuid = $entity->getUuid();
-        $bean->from = $entity->getFrom();
-        $bean->to = $entity->getTo();
-        $bean->content = $entity->getContent();
-        $bean->send = $entity->getSend();
-        $bean->received = $entity->getReceived();
-        $bean->read = $entity->getRead();
+        return (new Message())->setData($data);
+    }
 
-        $id = R::store($bean);
-
-        R::close();
-
-        if (gettype($id) === 'integer' || gettype($id) === 'string')
-        {
-            return $entity->setId($id);
-        }
+    public static function emptyEntity(): Message
+    {
         return new Message();
     }
 
-    private static function _find(string $uuid): NULL|\RedBeanPHP\OODBBean
+    /**
+     * @throws SQL|RedException
+     */
+    public static function create(Message $entity): Message
     {
-        $bindings = ['uuid' => $uuid];
-        return R::findOne(self::TABLE_NAME, 'uuid = :uuid ', $bindings);
+        return parent::_create($entity);
     }
 
     public static function get(string $uuid): Message
     {
-        $bean = self::_find($uuid);
-
-        if(is_null($bean))
-        {
-            return new Message();
-        }
-        return (new Message())->setData($bean->export());
+        return parent::_get($uuid);
     }
 
     /**
@@ -58,15 +41,7 @@ class MessageDAL
      */
     public static function getAll(string $to): array
     {
-        $bindings = ['to' => $to];
-        $messages = R::findAll(self::TABLE_NAME, 'to = :to ', $bindings);
-        if (count($messages) <= 0)
-        {
-            return [];
-        }
-        return array_map(function (object $bean): object {
-            return (new Message())->setData($bean->export());
-        }, $messages);
+        return parent::_getAll($to);
     }
 
     /**
@@ -74,21 +49,7 @@ class MessageDAL
      */
     public static function remove(string $uuid): Message
     {
-        $bean = self::_find($uuid);
-
-        if (is_null($bean))
-        {
-            return new Message();
-        }
-
-        $entity = (new Message())->setData($bean->export());
-        $works = (bool)R::trash($bean);
-
-        if ($works)
-        {
-            return $entity;
-        }
-        throw new SQL('Remove error!');
+        return parent::_remove($uuid);
     }
 
     /**
@@ -96,37 +57,6 @@ class MessageDAL
      */
     public static function update(Message $entity): Message
     {
-        $bean = self::_find($entity->getUuid());
-
-        // If the user exists, update it
-        if (is_null($bean)) {
-            return new Message();
-        }
-
-        $content = $entity->getContent();
-        $received = $entity->getReceived();
-        $read = $entity->getRead();
-
-        if ($content) {
-            $bean->content = $content;
-        }
-
-        if ($received) {
-            $bean->received = $received;
-        }
-
-        if ($read) {
-            $bean->read = $read;
-        }
-
-        // save the user
-        $id = R::store($bean);
-
-        if(gettype($id) === 'integer' || gettype($id) === 'string')
-        {
-            return $entity->setId($id);
-        }
-
-        return new Message();
+        return parent::_update($entity);
     }
 }

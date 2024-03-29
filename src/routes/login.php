@@ -3,7 +3,7 @@ namespace DazzRick\HelloServer;
 
 use DazzRick\HelloServer\dal\TokenDAL;
 use DazzRick\HelloServer\Entity\Token;
-use DazzRick\HelloServer\Exceptions\NotFoundException;
+use DazzRick\HelloServer\Exceptions\MethodNotAllowedException;
 use DazzRick\HelloServer\Exceptions\NotImplementedException;
 use DazzRick\HelloServer\Services\UserService;
 use Firebase\JWT\JWT;
@@ -65,9 +65,9 @@ function getResponse(): string
     return json_encode($return);
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'GET')
+if ($_SERVER['REQUEST_METHOD'] !== 'GET')
 {
-    throw new NotFoundException();
+    throw new MethodNotAllowedException();
 }
 
 echo getResponse();

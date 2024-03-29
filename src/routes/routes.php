@@ -11,10 +11,11 @@ $resource = $_REQUEST['resource'] ?? null;
 try
 {
     return match ($resource) {
+        'clean' => require_once 'clean.php',
         'login' => require_once 'login.php',
         'register' => require_once 'register.php',
         'user' => require_once 'user.php',
-        'message' => require_once 'message.php',
+        'message' || 'file' => require_once 'base.php',
         default => throw new NotFoundException(),
     };
 }

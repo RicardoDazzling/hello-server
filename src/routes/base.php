@@ -4,6 +4,7 @@ namespace DazzRick\HelloServer\Routes;
 use DazzRick\HelloServer\dal\TokenDAL;
 use DazzRick\HelloServer\Exceptions\MethodNotAllowedException;
 use DazzRick\HelloServer\Exceptions\ValidationException;
+use DazzRick\HelloServer\Services\FileService;
 use DazzRick\HelloServer\Services\MessageService;
 use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
@@ -24,8 +25,13 @@ enum MessageAction: string
         $token = $_REQUEST['token'] ?? null;
         $uuid = $_REQUEST['uuid'] ?? null;
         $tokenEntity = TokenDAL::validate($token);
-
-        $message = new MessageService();
+        if($_REQUEST['resource'] === 'file')
+        {
+            $service = new FileService();
+        }
+        else{
+            $service = new MessageService();
+        }
 
         $response = [];
 
@@ -37,24 +43,24 @@ enum MessageAction: string
                     {
                         $statusCode = StatusCode::CREATED;
                         $postBody['from'] = $tokenEntity->getUuid();
-                        $response = $message->create($postBody);
+                        $response = $service->create($postBody);
                         break;
                     }
-                    $response = $message->update($postBody, $uuid);
+                    $response = $service->update($postBody, $uuid);
                     break;
                 case self::GET:
                     if (is_null($uuid))
                     {
-                        $response = $message->retrieve_all($tokenEntity->getUuid());
+                        $response = $service->retrieve_all($tokenEntity->getUuid());
                         break;
                     }
-                    $response = $message->retrieve($uuid);
+                    $response = $service->retrieve($uuid);
                     break;
                 case self::DELETE:
                     $statusCode = StatusCode::NO_CONTENT;
-                    $message->remove($uuid);
+                    $service->remove($uuid);
             }
-            if (http_response_code() === StatusCode::OK)
+            if (http_response_code() === StatusCode::OK && $statusCode !== StatusCode::OK)
             {
                 Http::setHeadersByCode($statusCode);
             }

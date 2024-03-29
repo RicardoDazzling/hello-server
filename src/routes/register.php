@@ -1,11 +1,9 @@
 <?php
 namespace DazzRick\HelloServer;
 
-use DazzRick\HelloServer\Exceptions\NotFoundException;
-use DazzRick\HelloServer\Exceptions\NotImplementedException;
+use DazzRick\HelloServer\Exceptions\MethodNotAllowedException;
 use DazzRick\HelloServer\Exceptions\ValidationException;
 use DazzRick\HelloServer\Services\UserService;
-use Respect\Validation\Validator as v;
 use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
 
@@ -33,7 +31,7 @@ function getResponse(): string
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST')
 {
-    throw new NotFoundException();
+    throw new MethodNotAllowedException();
 }
 
 echo getResponse();

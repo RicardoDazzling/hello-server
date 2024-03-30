@@ -8,21 +8,21 @@ use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
 class Message implements Entitable
 {
 
-    private ?int $_id;
+    private ?int $_id = null;
 
-    private string $_uuid;
+    private ?string $_uuid = null;
 
-    private string $_from;
+    private ?string $_from = null;
 
-    private string $_to;
+    private ?string $_to = null;
 
-    private string $_content;
+    private ?string $_content = null;
 
-    private int $_send;
+    private ?int $_send = null;
 
-    private int $_received;
+    private ?int $_received = null;
 
-    private int $_read;
+    private ?int $_read = null;
 
     public function __get(string $name)
     {
@@ -127,7 +127,7 @@ class Message implements Entitable
         throw new InvalidPropertyOrMethod('UUID property already defined.');
     }
 
-    #[Override] public function getUuid(): string
+    #[Override] public function getUuid(): ?string
     {
         return $this->_uuid;
     }
@@ -188,7 +188,7 @@ class Message implements Entitable
         return false;
     }
 
-    public function getFrom(): string
+    public function getFrom(): ?string
     {
         return $this->_from;
     }
@@ -199,7 +199,7 @@ class Message implements Entitable
         return $this;
     }
 
-    public function getTo(): string
+    public function getTo(): ?string
     {
         return $this->_to;
     }
@@ -210,7 +210,7 @@ class Message implements Entitable
         return $this;
     }
 
-    public function getContent(): string
+    public function getContent(): ?string
     {
         return $this->_content;
     }
@@ -221,7 +221,7 @@ class Message implements Entitable
         return $this;
     }
 
-    public function getSend(): int
+    public function getSend(): ?int
     {
         return $this->_send;
     }
@@ -232,7 +232,7 @@ class Message implements Entitable
         return $this;
     }
 
-    public function getReceived(): int
+    public function getReceived(): ?int
     {
         return $this->_received;
     }
@@ -243,7 +243,7 @@ class Message implements Entitable
         return $this;
     }
 
-    public function getRead(): int
+    public function getRead(): ?int
     {
         return $this->_read;
     }

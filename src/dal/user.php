@@ -16,7 +16,7 @@ final class UserDAL
      */
     public static function create(User $entity): User
     {
-        if(!is_null(self::get_by_email($entity->getEmail())))
+        if(!self::get_by_email($entity->getEmail())->isEmpty())
         {
             throw new ValidationException("EMail already exists.");
         }

@@ -15,36 +15,38 @@ use PH7\PhpHttpResponseHeader\Http;
 
 function getResponse(): string
 {
+    $code = $_REQUEST['code'] ?? null;
+    if (is_null($code)) throw new BadRequestException('Verification Code is required.');
+    if (strlen($code) !== 6 || !is_numeric($code)) throw new BadRequestException('Invalid Verification Code.');
+
     $email = $_REQUEST['email'] ?? null;
     if (is_null($email)) throw new BadRequestException('Email is required.');
     if(!(v::email()->validate($email))) throw new BadRequestException('Email is invalid.');
     $user = (new UserService())->retrieve(email: $email);
-    (new VerificationService())->create($user);
-    return json_encode(['Success' => true]);
+    if ($user->isEmpty()) throw new BadRequestException('User not found.');
+    (new VerificationService())->verify($code, $user);
 
-    if (!$user->isEmpty()) {
-        $token = JWT::encode(
-            [
-                'iss' => $_ENV['APP_URL'],
-                'iat' => time(),
-                'data' => [
-                    'uuid' => $user->uuid,
-                    'email' => $user->email,
-                    'name' => $user->name
-                ]
-            ],
-            $_ENV['JWT_KEY'],
-            $_ENV['JWT_ALG']
-        );
+    $token = JWT::encode(
+        [
+            'iss' => $_ENV['APP_URL'],
+            'iat' => time(),
+            'data' => [
+                'uuid' => $user->getUuid(),
+                'email' => $email,
+                'name' => $user->getName()
+            ]
+        ],
+        $_ENV['JWT_KEY'],
+        $_ENV['JWT_ALG']
+    );
 
-        $entity = (new Token())->setToken($token);
-        TokenDAL::create($entity);
+    $entity = (new Token())->setToken($token);
+    TokenDAL::create($entity);
 
-        return json_encode([
-            'message' => sprintf('%s successfully logged in', $user['email']),
-            'token' => $token
-        ]);
-    }
+    return json_encode([
+        'message' => sprintf('%s successfully logged in', $user['email']),
+        'token' => $token
+    ]);
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET')

@@ -6,19 +6,19 @@ use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
 
 class User implements Entitable
 {
-    private ?int $_id;
+    private ?int $_id = null;
 
-    private string $_uuid;
+    private ?string $_uuid = null;
 
-    private bool $_status;
+    private ?bool $_status = null;
 
-    private ?string $_name;
+    private ?string $_name = null;
 
-    private string $_email;
+    private ?string $_email = null;
 
-    private ?string $_default;
+    private ?string $_default = null;
 
-    private string $_creation_date;
+    private ?string $_creation_date = null;
 
     public function __get(string $name)
     {
@@ -99,13 +99,13 @@ class User implements Entitable
         throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name));
     }
 
-    public function setId(int $id) :self
+    public function setId(int $id): self
     {
         $this->_id = $id;
         return $this;
     }
 
-    public function setUuid(string $uuid) :self
+    public function setUuid(string $uuid): self
     {
         if(empty($this->_uuid))
         {
@@ -115,19 +115,19 @@ class User implements Entitable
         throw new InvalidPropertyOrMethod('UUID property already defined.');
     }
 
-    public function getUuid(): string
+    public function getUuid(): ?string
     {
         return $this->_uuid;
     }
 
-    public function setStatus(bool $status) :self
+    public function setStatus(bool $status): self
     {
         $this->_status = $status;
 
         return $this;
     }
 
-    public function getStatus(): string
+    public function getStatus(): ?string
     {
         return $this->_status;
     }
@@ -151,7 +151,7 @@ class User implements Entitable
         return $this;
     }
 
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->_email;
     }
@@ -175,7 +175,7 @@ class User implements Entitable
         return $this;
     }
 
-    public function getCreationDate(): string
+    public function getCreationDate(): ?string
     {
         return $this->_creation_date;
     }

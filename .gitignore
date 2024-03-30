@@ -11,3 +11,6 @@ phpunit.xml
 
 # IDE config folder
 /.idea
+
+# Templates
+/static/email/index.html

@@ -10,17 +10,17 @@ use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
 
 class Token implements Entitable
 {
-    private int $_id;
+    private ?int $_id = null;
 
-    private string $_token;
+    private ?string $_token = null;
 
-    private string $_uuid;
+    private ?string $_uuid = null;
 
-    private string $_email;
+    private ?string $_email = null;
 
-    private string $_name;
+    private ?string $_name = null;
 
-    private int $_time;
+    private ?int $_time = null;
 
     public static function validate(string $token): bool
     {
@@ -131,7 +131,7 @@ class Token implements Entitable
         return $this;
     }
 
-    public function getToken(): string
+    public function getToken(): ?string
     {
         return $this->_token;
     }
@@ -141,7 +141,7 @@ class Token implements Entitable
         $this->readonly('UUID');
     }
 
-    #[Override] public function getUuid(): string
+    #[Override] public function getUuid(): ?string
     {
         $this->tokenAlreadyDefined();
         return $this->_uuid;
@@ -152,7 +152,7 @@ class Token implements Entitable
         $this->readonly('Time');
     }
 
-    public function getTime(): int
+    public function getTime(): ?int
     {
         $this->tokenAlreadyDefined();
         return $this->_time;
@@ -163,7 +163,7 @@ class Token implements Entitable
         $this->readonly('EMail');
     }
 
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         $this->tokenAlreadyDefined();
         return $this->_email;
@@ -174,13 +174,13 @@ class Token implements Entitable
         $this->readonly('Name');
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         $this->tokenAlreadyDefined();
         return $this->_name;
     }
 
-    #[Override] public function setData(array $data): Entitable
+    #[Override] public function setData(array $data): self
     {
         if(count($data) > 0)
         {

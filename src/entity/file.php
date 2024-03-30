@@ -6,7 +6,7 @@ use Override;
 
 class File extends Message
 {
-    private int $_open;
+    private ?int $_open = null;
 
     #[Override] public function __get(string $name)
     {
@@ -38,15 +38,15 @@ class File extends Message
 
     #[Override] public function isEmpty(): bool
     {
-        if(empty($this->_uuid) && empty($this->_from) && empty($this->_to) && empty($this->_content)
-            && empty($this->_send) && empty($this->_open))
+        if(empty($this->uuid) && empty($this->from) && empty($this->to) && empty($this->content)
+            && empty($this->send) && empty($this->_open))
         {
             return true;
         }
         return false;
     }
 
-    public function getOpen(): int
+    public function getOpen(): ?int
     {
         return $this->_open;
     }

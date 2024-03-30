@@ -8,5 +8,5 @@
 - [x] Message route, [message entity, message service](## "from, to, content, send, received, read") and [message DAL](## "will stay a month in the database");  
 - [x] Files route, [file entity, file service](## "from, to, content, send, received, read, open") and [file DAL](## "will stay 7 days in the database");  
 - [x] Remove outdated files and messages;
-- [ ] Registration and Login with mail verification;
+- [x] Registration and Login with mail verification;
 - [ ] Debug.

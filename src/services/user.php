@@ -47,19 +47,31 @@ class UserService implements Serviceable
 
 
 
-    public function retrieve(string $uuid): User
+    public function retrieve(?string $uuid = null, ?string $email = null): User
     {
-        if (!v::uuid()->validate($uuid)) {
-            throw new ValidationException("Invalid user UUID");
+        if(!is_null($uuid))
+        {
+            if (!v::uuid()->validate($uuid)) throw new ValidationException("Invalid user UUID");
+
+            $user = UserDAL::get($uuid);
+
+            if ($user->isEmpty()) {
+                Http::setHeadersByCode(StatusCode::NOT_FOUND);
+            }
+            return $user;
         }
+        if(!is_null($email))
+        {
+            if (!v::email()->validate($email)) throw new ValidationException("Invalid user EMail");
 
-        $user = UserDAL::get($uuid);
+            $user = UserDAL::get_by_email($email);
 
-        if ($user->isEmpty()) {
-            Http::setHeadersByCode(StatusCode::NOT_FOUND);
+            if ($user->isEmpty()) {
+                Http::setHeadersByCode(StatusCode::NOT_FOUND);
+            }
+            return $user;
         }
-
-        return $user;
+        throw new ValidationException('Missing data: uuid and email.');
     }
 
     public function update(array $postBody, string $uuid): User

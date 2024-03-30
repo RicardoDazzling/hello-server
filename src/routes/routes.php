@@ -2,6 +2,7 @@
 namespace DazzRick\HelloServer;
 
 use DazzRick\HelloServer\Exceptions\BadRequestException;
+use DazzRick\HelloServer\Exceptions\InternalServerException;
 use DazzRick\HelloServer\Exceptions\MethodNotAllowedException;
 use DazzRick\HelloServer\exceptions\NotFoundException;
 use DazzRick\HelloServer\Exceptions\UnAuthorizedException;
@@ -19,7 +20,7 @@ try
         default => throw new NotFoundException(),
     };
 }
-catch (NotFoundException|MethodNotAllowedException|BadRequestException|UnAuthorizedException $e)
+catch (NotFoundException|MethodNotAllowedException|BadRequestException|UnAuthorizedException|InternalServerException $e)
 {
     Http::setHeadersByCode($e->getCode());
     echo json_encode(['error' => $e->getMessage()]);

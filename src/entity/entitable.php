@@ -12,7 +12,7 @@ interface Entitable
 
     public function setUuid(string $uuid): self;
 
-    public function getUuid(): string;
+    public function getUuid(): ?string;
 
     public function setData(array $data): self;
 

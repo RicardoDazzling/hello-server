@@ -1,10 +1,10 @@
 <?php
 
-namespace DazzRick\HelloServer\dal;
+namespace DazzRick\HelloServer\DAL;
 
 use DazzRick\HelloServer\Entity\Token;
 use DazzRick\HelloServer\Exceptions\BadRequestException;
-use DazzRick\HelloServer\exceptions\UnAuthorizedException;
+use DazzRick\HelloServer\Exceptions\UnAuthorizedException;
 use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
 use RedBeanPHP\R;
@@ -138,5 +138,4 @@ class TokenDAL
 
         return new Token();
     }
-
 }

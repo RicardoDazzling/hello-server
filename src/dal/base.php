@@ -2,8 +2,11 @@
 
 namespace DazzRick\HelloServer\DAL;
 
+use DazzRick\HelloServer\Entity\Call;
 use DazzRick\HelloServer\Entity\File;
+use DazzRick\HelloServer\Entity\Lost;
 use DazzRick\HelloServer\Entity\Message;
+use DazzRick\HelloServer\Entity\Writing;
 use RedBeanPHP\R;
 use RedBeanPHP\RedException;
 use RedBeanPHP\RedException\SQL;
@@ -15,20 +18,29 @@ class BaseDAL
     public const array ALLOW_UPDATE_COLUMNS = [];
     public const string TIME = 'month'; # month === 2592000s ; week === 604800s
 
-    public static function populatedEntity(array $data): Message|File
+    /**
+     * @param array $data
+     * @return Message|File|Call|Lost|Writing
+     */
+    public static function populatedEntity(array $data): mixed
     {
         return (new Message())->setData($data);
     }
 
-    public static function emptyEntity(): Message|File
+    /**
+     * @return Message|File|Call|Lost|Writing
+     */
+    public static function emptyEntity(): mixed
     {
         return new Message();
     }
 
     /**
+     * @param Message|File|Call|Lost|Writing $entity
+     * @return Message|File|Call|Lost|Writing
      * @throws SQL|RedException
      */
-    protected static function _create(Message|File $entity): Message|File
+    protected static function _create(mixed $entity): mixed
     {
         $bean = R::dispense(self::TABLE_NAME);
         foreach (self::COLUMNS as $column)
@@ -53,7 +65,11 @@ class BaseDAL
         return R::findOne(self::TABLE_NAME, 'uuid = :uuid ', $bindings);
     }
 
-    protected static function _get(string $uuid): Message|File
+    /**
+     * @param string $uuid
+     * @return Message|File|Call|Lost|Writing
+     */
+    protected static function _get(string $uuid): mixed
     {
         $bean = self::_find($uuid);
 
@@ -65,7 +81,7 @@ class BaseDAL
     }
 
     /**
-     * @return Message[]|File[]|null[]
+     * @return Message[]|File[]|Call[]|Lost[]|Writing[]|array<void>
      */
     protected static function _getAll(string $to): array
     {
@@ -81,9 +97,10 @@ class BaseDAL
     }
 
     /**
+     * @return Message|File|Call|Lost|Writing
      * @throws SQL
      */
-    protected static function _remove(string $uuid): Message|File
+    protected static function _remove(string $uuid): mixed
     {
         $bean = self::_find($uuid);
 
@@ -103,9 +120,11 @@ class BaseDAL
     }
 
     /**
-     * @throws SQL
+     * @param Message|File|Call|Lost|Writing $entity
+     * @return Message|File|Call|Lost|Writing
+     * @throws SQL|RedException
      */
-    protected static function _update(Message|File $entity): Message|File
+    protected static function _update(mixed $entity): mixed
     {
         $bean = self::_find($entity->getUuid());
 
@@ -131,7 +150,7 @@ class BaseDAL
         return self::emptyEntity();
     }
 
-    protected static function clean(): void
+    public static function clean(): void
     {
         $time = time();
         $time -= self::TIME === 'month' ? 2592000 : 604800;

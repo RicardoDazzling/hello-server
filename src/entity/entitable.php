@@ -8,15 +8,22 @@ interface Entitable
 
     public function __set(string $name, mixed $value);
 
-    public function setId(int $id): self;
+    public function setId(int $id): static;
 
-    public function setUuid(string $uuid): self;
-
-    public function getUuid(): ?string;
-
-    public function setData(array $data): self;
+    public function setData(array $data): static;
 
     public function getData(): array;
 
     public function isEmpty(): bool;
+}
+
+function setData(mixed $self, array $data){
+    if(count($data) > 0)
+    {
+        foreach ($data as $data_name => $data_value)
+        {
+            $self->__set($data_name, $data_value);
+        }
+    }
+    return $self;
 }

@@ -10,17 +10,17 @@ use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
 
 class Token implements Entitable
 {
-    private ?int $_id = null;
+    protected ?int $_id = null;
 
-    private ?string $_token = null;
+    protected ?string $_token = null;
 
-    private ?string $_uuid = null;
+    protected ?string $_uuid = null;
 
-    private ?string $_email = null;
+    protected ?string $_email = null;
 
-    private ?string $_name = null;
+    protected ?string $_name = null;
 
-    private ?int $_time = null;
+    protected ?int $_time = null;
 
     public static function validate(string $token): bool
     {
@@ -37,10 +37,7 @@ class Token implements Entitable
 
     private function tokenAlreadyDefined(): void
     {
-        if(empty($this->_token))
-        {
-            throw new RuntimeException('Token is not defined');
-        }
+        if(empty($this->_token)) throw new RuntimeException('Token is not defined');
     }
 
     private function readonly(string $name): void
@@ -50,77 +47,37 @@ class Token implements Entitable
 
     public function __get(string $name)
     {
-        if($name === 'id')
+        return match($name)
         {
-            return $this->_id;
-        }
-        if($name === 'token')
-        {
-            return $this->getToken();
-        }
-        if($name === 'time')
-        {
-            return $this->getTime();
-        }
-        if($name === 'uuid')
-        {
-            return $this->getUuid();
-        }
-        if($name === 'email')
-        {
-            return $this->getEmail();
-        }
-        if($name === 'name')
-        {
-            return $this->getName();
-        }
-        if($name === 'data')
-        {
-            return $this->getData();
-        }
-        throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name));
+            'id' => $this->_id,
+            'token' => $this->getToken(),
+            'time' => $this->getTime(),
+            'uuid' => $this->getUuid(),
+            'email' => $this->getEmail(),
+            'name' => $this->getName(),
+            'data' => $this->getData(),
+            default => throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name))
+        };
     }
 
     public function __set(string $name, mixed $value)
     {
-        if($name === 'id')
+        return match($name)
         {
-            $this->readonly('ID');
-        }
-        if($name === 'token')
-        {
-            return $this->setToken($value);
-        }
-        if($name === 'time')
-        {
-            return $this->setTime($value);
-        }
-        if($name === 'uuid')
-        {
-            return $this->setUuid($value);
-        }
-        if($name === 'email')
-        {
-            return $this->setEmail($value);
-        }
-        if($name === 'name')
-        {
-            return $this->setName($value);
-        }
-        if($name === 'data')
-        {
-            return $this->setData($value);
-        }
-        throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name));
+            'id' => $this->setId($value),
+            'token' => $this->setToken($value),
+            'time' => $this->setTime($value),
+            'uuid' => $this->setUuid($value),
+            'email' => $this->setEmail($value),
+            'name' => $this->setName($value),
+            'data' => $this->setData($value),
+            default => throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name))
+        };
     }
 
-    public function setId(int $id): self
-    {
-        $this->_id = $id;
-        return $this;
-    }
+    public function setId(int $id): static { $this->readonly('ID'); }
 
-    public function setToken(string $token): self
+    public function setToken(string $token): static
     {
         $this->_token = $token;
         $payload = /*(array)*/JWT::decode($token, new Key($_ENV['JWT_KEY'], $_ENV['JWT_ALG']));
@@ -131,99 +88,36 @@ class Token implements Entitable
         return $this;
     }
 
-    public function getToken(): ?string
-    {
-        return $this->_token;
-    }
+    public function getToken(): ?string { return $this->_token; }
 
-    #[Override] public function setUuid(string $uuid): self
-    {
-        $this->readonly('UUID');
-    }
+    public function setUuid(string $uuid): static { $this->readonly('UUID'); }
 
-    #[Override] public function getUuid(): ?string
-    {
-        $this->tokenAlreadyDefined();
-        return $this->_uuid;
-    }
+    public function getUuid(): ?string { $this->tokenAlreadyDefined(); return $this->_uuid; }
 
-    public function setTime(int $time): self
-    {
-        $this->readonly('Time');
-    }
+    public function setTime(int $time): static { $this->readonly('Time'); }
 
-    public function getTime(): ?int
-    {
-        $this->tokenAlreadyDefined();
-        return $this->_time;
-    }
+    public function getTime(): ?int { $this->tokenAlreadyDefined(); return $this->_time; }
 
-    public function setEmail(string $email): self
-    {
-        $this->readonly('EMail');
-    }
+    public function setEmail(string $email): static { $this->readonly('EMail'); }
 
-    public function getEmail(): ?string
-    {
-        $this->tokenAlreadyDefined();
-        return $this->_email;
-    }
+    public function getEmail(): ?string { $this->tokenAlreadyDefined(); return $this->_email; }
 
-    public function setName(string $name): self
-    {
-        $this->readonly('Name');
-    }
+    public function setName(string $name): static { $this->readonly('Name'); }
 
-    public function getName(): ?string
-    {
-        $this->tokenAlreadyDefined();
-        return $this->_name;
-    }
+    public function getName(): ?string { $this->tokenAlreadyDefined(); return $this->_name; }
 
-    #[Override] public function setData(array $data): self
-    {
-        if(count($data) > 0)
-        {
-            foreach ($data as $data_name => $data_value)
-            {
-                $this->__set($data_name, $data_value);
-            }
-        }
-        return $this;
-    }
+    #[Override] public function setData(array $data): static { return setData($this, $data); }
 
     #[Override] public function getData(): array
     {
         $array = [];
-        if(!empty($this->_uuid))
-        {
-            $array['uuid'] = $this->_uuid;
-        }
-        if(!empty($this->_token))
-        {
-            $array['token'] = $this->_token;
-        }
-        if(!empty($this->_time))
-        {
-            $array['time'] = $this->_time;
-        }
-        if(!empty($this->_email))
-        {
-            $array['email'] = $this->_email;
-        }
-        if(!empty($this->_name))
-        {
-            $array['name'] = $this->_name;
-        }
+        if(!empty($this->_uuid)) $array['uuid'] = $this->_uuid;
+        if(!empty($this->_token)) $array['token'] = $this->_token;
+        if(!empty($this->_time)) $array['time'] = $this->_time;
+        if(!empty($this->_email)) $array['email'] = $this->_email;
+        if(!empty($this->_name)) $array['name'] = $this->_name;
         return $array;
     }
 
-    #[Override] public function isEmpty(): bool
-    {
-        if(empty($this->_token))
-        {
-            return true;
-        }
-        return false;
-    }
+    #[Override] public function isEmpty(): bool { return empty($this->_token); }
 }

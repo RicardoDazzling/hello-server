@@ -9,4 +9,9 @@
 - [x] Files route, [file entity, file service](## "from, to, content, send, received, read, open") and [file DAL](## "will stay 7 days in the database");  
 - [x] Remove outdated files and messages;
 - [x] Registration and Login with mail verification;
+- [x] Call route, [call entity, call service](## "from, to, image, audio") and call DAL;
+- [x] Writing route, [writing entity, writing service](## "from, to"); and writing DAL;
+- [x] Lost route, [lost entity, lost service](## "from, to, type, send") and [lost DAL](## "will stay a month in the database");
+- [ ] Events [static file](## "writing, message, file, voice, video, lost");
+- [ ] Documentation;
 - [ ] Debug.

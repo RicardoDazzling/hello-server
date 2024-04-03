@@ -3,8 +3,11 @@
 namespace DazzRick\HelloServer\Services;
 
 use DazzRick\HelloServer\DAL\MessageDAL;
+use DazzRick\HelloServer\Entity\Call;
 use DazzRick\HelloServer\Entity\File;
+use DazzRick\HelloServer\Entity\Lost;
 use DazzRick\HelloServer\Entity\Message;
+use DazzRick\HelloServer\Entity\Writing;
 use DazzRick\HelloServer\Exceptions\ValidationException;
 use DazzRick\HelloServer\Validation\MessageValidation;
 use PH7\JustHttp\StatusCode;
@@ -24,21 +27,42 @@ class BaseService
         MessageValidation::isCreationSchemaValid($data);
     }
 
-    protected static function emptyEntity(): Message|File
+    /**
+     * @return Message|File|Call|Lost|Writing
+     */
+    protected static function emptyEntity(): mixed
     {
         return new Message();
     }
 
-    protected static function populateEntity(array $data): Message|File
+    /**
+     * @return Message|File|Call|Lost|Writing
+     */
+    protected static function populateEntity(array $data): mixed
     {
         return (new Message())->setData($data);
     }
 
     /**
+     * @return Message|File|Call|Lost|Writing
+     */
+    protected static function populateCreateEntity(array $data): mixed
+    {
+        return self::emptyEntity()
+            ->setUuid(Uuid::uuid4()->toString())
+            ->setFrom($data['from'])
+            ->setTo($data['to'])
+            ->setContent($data['content'])
+            ->setSend(time());
+    }
+
+    /**
+     * @param Message|File|Call|Lost|Writing $entity
+     * @return Message|File|Call|Lost|Writing
      * @throws SQL
      * @throws RedException
      */
-    protected static function dalCreate(Message|File $entity): Message|File
+    protected static function dalCreate(mixed $entity): mixed
     {
         return MessageDAL::create($entity);
     }
@@ -48,38 +72,46 @@ class BaseService
         return MessageDAL::getAll($uuid);
     }
 
-    protected static function dalGet(string $uuid): Message|File
+    /**
+     * @param string $uuid
+     * @return Message|File|Call|Lost|Writing
+     */
+    protected static function dalGet(string $uuid): mixed
     {
         return MessageDAL::get($uuid);
     }
 
     /**
+     * @param Message|File|Call|Lost|Writing $entity
+     * @return Message|File|Call|Lost|Writing
      * @throws SQL
      */
-    protected static function dalUpdate(Message|File $entity): Message|File
+    protected static function dalUpdate(mixed $entity): mixed
     {
         return MessageDAL::update($entity);
     }
 
     /**
+     * @param string $uuid
+     * @return Message|File|Call|Lost|Writing
      * @throws SQL
      */
-    protected static function dalRemove(string $uuid): Message|File
+    protected static function dalRemove(string $uuid): mixed
     {
         return MessageDAL::remove($uuid);
     }
 
-    public function _create(array $data): Message|File
+    /**
+     * @param array $data
+     * @return Message|File|Call|Lost|Writing
+     * @throws RedException
+     * @throws SQL
+     */
+    public function _create(array $data): mixed
     {
         self::validation($data);
 
-        $message = self::emptyEntity();
-        $message
-            ->setUuid(Uuid::uuid4()->toString())
-            ->setFrom($data['from'])
-            ->setTo($data['to'])
-            ->setContent($data['content'])
-            ->setSend(date(self::DATE_TIME_FORMAT));
+        $message = self::populateCreateEntity($data);
 
         $message = self::dalCreate($message);
         if ($message->isEmpty()) {
@@ -104,7 +136,10 @@ class BaseService
         }, $messages);
     }
 
-    public function _retrieve(string $uuid): Message|File
+    /**
+     * @return Message|File|Call|Lost|Writing
+     */
+    public function _retrieve(string $uuid): mixed
     {
         if (!v::uuid()->validate($uuid)) {
             throw new ValidationException("Invalid user UUID");
@@ -119,7 +154,10 @@ class BaseService
         return $message;
     }
 
-    public function _update(mixed $postBody, string $uuid): Message|File
+    /**
+     * @return Message|File|Call|Lost|Writing
+     */
+    public function _update(mixed $postBody, string $uuid): mixed
     {
         if (!(v::uuid()->validate($uuid)))
         {
@@ -139,7 +177,10 @@ class BaseService
         return $message;
     }
 
-    public function _remove(?string $uuid): Message|File
+    /**
+     * @return Message|File|Call|Lost|Writing
+     */
+    public function _remove(?string $uuid): mixed
     {
         if(is_null($uuid)){
             throw new ValidationException("UUID is required.");
@@ -150,7 +191,7 @@ class BaseService
         try {
             $entity = self::dalRemove($uuid);
             if ($entity->isEmpty()){
-                throw new ValidationException("Unknown user.");
+                throw new ValidationException("Unknown entity.");
             }
             return $entity;
         }

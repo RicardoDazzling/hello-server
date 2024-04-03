@@ -1,7 +1,7 @@
 <?php
 namespace DazzRick\HelloServer;
 
-use DazzRick\HelloServer\dal\TokenDAL;
+use DazzRick\HelloServer\DAL\TokenDAL;
 use DazzRick\HelloServer\Entity\Token;
 use DazzRick\HelloServer\Exceptions\BadRequestException;
 use DazzRick\HelloServer\Exceptions\MethodNotAllowedException;
@@ -21,30 +21,6 @@ function getResponse(): string
     $user = (new UserService())->retrieve(email: $email);
     (new VerificationService())->create($user);
     return json_encode(['Success' => true]);
-
-    if (!$user->isEmpty()) {
-        $token = JWT::encode(
-            [
-                'iss' => $_ENV['APP_URL'],
-                'iat' => time(),
-                'data' => [
-                    'uuid' => $user->uuid,
-                    'email' => $user->email,
-                    'name' => $user->name
-                ]
-            ],
-            $_ENV['JWT_KEY'],
-            $_ENV['JWT_ALG']
-        );
-
-        $entity = (new Token())->setToken($token);
-        TokenDAL::create($entity);
-
-        return json_encode([
-            'message' => sprintf('%s successfully logged in', $user['email']),
-            'token' => $token
-        ]);
-    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET')

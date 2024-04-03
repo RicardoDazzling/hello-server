@@ -8,9 +8,9 @@ use Respect\Validation\Validator as v;
 
 final class BaseValidation
 {
-    public static function isCreationSchemaValid(array $data, bool $mandatory = true): bool
+    public static function isCreationSchemaValid(array $data): bool
     {
-        if(!(array_key_exists('to', $data) && array_key_exists('content', $data)))
+        if(!array_key_exists('to', $data))
         {
             throw new ValidationException('Missing arguments inside the payload.');
         }

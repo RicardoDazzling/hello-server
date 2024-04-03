@@ -3,21 +3,19 @@
 namespace DazzRick\HelloServer\Validation;
 
 use DazzRick\HelloServer\Exceptions\ValidationException;
-use Respect\Validation\Validator as v;
 
-final class MessageValidation implements Validation
+final class LostValidation implements Validation
 {
     #[\Override] public static function isCreationSchemaValid(array $data): bool
     {
         if(!BaseValidation::isCreationSchemaValid($data)) return false;
-        if(!array_key_exists('content', $data))
+        if(!array_key_exists('type', $data))
         {
             throw new ValidationException('Missing arguments inside the payload.');
         }
-        $content = trim($data['content']);
-        if(!v::stringType()->length(1)->validate($content))
+        if(in_array($data['type'], ['audio', 'video'], TRUE))
         {
-            throw new ValidationException('Content is empty');
+            throw new ValidationException('Invalid typé.');
         }
         return true;
     }

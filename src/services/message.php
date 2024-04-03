@@ -2,6 +2,7 @@
 
 namespace DazzRick\HelloServer\Services;
 
+use DazzRick\HelloServer\DAL\MessageDAL;
 use DazzRick\HelloServer\Entity\Message;
 
 class MessageService extends BaseService implements Serviceable
@@ -33,6 +34,6 @@ class MessageService extends BaseService implements Serviceable
 
     public function clean(): void
     {
-        Message::clean();
+        MessageDAL::clean();
     }
 }

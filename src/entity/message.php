@@ -5,252 +5,85 @@ namespace DazzRick\HelloServer\Entity;
 use Override;
 use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
 
-class Message implements Entitable
+class Message extends Base
 {
+    protected ?string $_uuid = null;
 
-    private ?int $_id = null;
+    protected ?string $_content = null;
 
-    private ?string $_uuid = null;
+    protected ?int $_send = null;
 
-    private ?string $_from = null;
+    protected ?int $_received = null;
 
-    private ?string $_to = null;
-
-    private ?string $_content = null;
-
-    private ?int $_send = null;
-
-    private ?int $_received = null;
-
-    private ?int $_read = null;
+    protected ?int $_read = null;
 
     public function __get(string $name)
     {
-        if($name === 'id')
+        $parent = parent::__get($name);
+        if($parent !== false) return $parent;
+        return match($name)
         {
-            return $this->_id;
-        }
-        if($name === 'uuid')
-        {
-            return $this->getUuid();
-        }
-        if($name === 'from')
-        {
-            return $this->getFrom();
-        }
-        if($name === 'to')
-        {
-            return $this->getTo();
-        }
-        if($name === 'content')
-        {
-            return $this->getContent();
-        }
-        if($name === 'send')
-        {
-            return $this->getSend();
-        }
-        if($name === 'received')
-        {
-            return $this->getReceived();
-        }
-        if($name === 'read')
-        {
-            return $this->getRead();
-        }
-        if($name === 'data')
-        {
-            return $this->getData();
-        }
-        throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name));
+            'uuid' => $this->getUuid(),
+            'content' => $this->getContent(),
+            'send' => $this->getSend(),
+            'received' => $this->getReceived(),
+            'read' => $this->getRead(),
+            default => throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name))
+        };
     }
 
     public function __set(string $name, mixed $value)
     {
-        if($name === 'id')
+        $parent = parent::__set($name, $value);
+        if($parent !== false) return $parent;
+        return match($name)
         {
-            return $this->setId($value);
-        }
-        if($name === 'uuid')
-        {
-            return $this->setUuid($value);
-        }
-        if($name === 'from')
-        {
-            return $this->setFrom($value);
-        }
-        if($name === 'to')
-        {
-            return $this->setTo($value);
-        }
-        if($name === 'content')
-        {
-            return $this->setContent($value);
-        }
-        if($name === 'send')
-        {
-            return $this->setSend($value);
-        }
-        if($name === 'received')
-        {
-            return $this->setReceived($value);
-        }
-        if($name === 'read')
-        {
-            return $this->setRead($value);
-        }
-        if($name === 'data')
-        {
-            if(!is_array($value))
-            {
-                throw new InvalidPropertyOrMethod(sprintf(
-                    'Data value is from "%s" type and array type is required.', gettype($value)));
-            }
-            return $this->setData($value);
-        }
-        throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name));
+            'uuid' => $this->setUuid($value),
+            'content' => $this->setContent($value),
+            'send' => $this->setSend($value),
+            'received' => $this->setReceived($value),
+            'read' => $this->setRead($value),
+            default => throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name))
+        };
     }
 
-    #[Override] public function setId(int $id): self
+    public function setUuid(string $uuid): static
     {
-        $this->_id = $id;
-        return $this;
-    }
-
-    #[Override] public function setUuid(string $uuid): self
-    {
-        if(empty($this->_uuid))
-        {
-            $this->_uuid = $uuid;
-            return $this;
-        }
+        if(empty($this->_uuid)) { $this->_uuid = $uuid; return $this; }
         throw new InvalidPropertyOrMethod('UUID property already defined.');
     }
 
-    #[Override] public function getUuid(): ?string
-    {
-        return $this->_uuid;
-    }
-
-    #[Override] public function setData(array $data): self
-    {
-        if(count($data) > 0)
-        {
-            foreach ($data as $data_name => $data_value)
-            {
-                $this->__set($data_name, $data_value);
-            }
-        }
-        return $this;
-    }
+    public function getUuid(): ?string { return $this->_uuid; }
 
     #[Override] public function getData(): array
     {
-        $array = [];
-        if(!empty($this->_uuid))
-        {
-            $array['uuid'] = $this->_uuid;
-        }
-        if(!empty($this->_from))
-        {
-            $array['from'] = $this->_from;
-        }
-        if(!empty($this->_to))
-        {
-            $array['to'] = $this->_to;
-        }
-        if(!empty($this->_content))
-        {
-            $array['content'] = $this->_content;
-        }
-        if(!empty($this->_send))
-        {
-            $array['send'] = $this->_send;
-        }
-        if(!empty($this->_received))
-        {
-            $array['received'] = $this->_received;
-        }
-        if(!empty($this->_read))
-        {
-            $array['read'] = $this->_read;
-        }
+        $array = parent::getData();
+        if(!empty($this->_uuid)) $array['uuid'] = $this->_uuid;
+        if(!empty($this->_content)) $array['content'] = $this->_content;
+        if(!empty($this->_send)) $array['send'] = $this->_send;
+        if(!empty($this->_received)) $array['received'] = $this->_received;
+        if(!empty($this->_read)) $array['read'] = $this->_read;
         return $array;
     }
 
     #[Override] public function isEmpty(): bool
     {
-        if(empty($this->_uuid) && empty($this->_from) && empty($this->_to) && empty($this->_content)
-            && empty($this->_send))
-        {
-            return true;
-        }
-        return false;
+        return (empty($this->_uuid) && !(parent::isEmpty()) && empty($this->_content) && empty($this->_send));
     }
 
-    public function getFrom(): ?string
-    {
-        return $this->_from;
-    }
+    public function getContent(): ?string { return $this->_content; }
 
-    public function setFrom(mixed $value): self
-    {
-        $this->_from = $value;
-        return $this;
-    }
+    public function setContent(mixed $value): static { $this->_content = $value; return $this; }
 
-    public function getTo(): ?string
-    {
-        return $this->_to;
-    }
+    public function getSend(): ?int { return $this->_send; }
 
-    public function setTo(mixed $value): self
-    {
-        $this->_to = $value;
-        return $this;
-    }
+    public function setSend(mixed $value): static { $this->_send = $value; return $this; }
 
-    public function getContent(): ?string
-    {
-        return $this->_content;
-    }
+    public function getReceived(): ?int { return $this->_received; }
 
-    public function setContent(mixed $value): self
-    {
-        $this->_content = $value;
-        return $this;
-    }
+    public function setReceived(mixed $value): static { $this->_received = $value; return $this; }
 
-    public function getSend(): ?int
-    {
-        return $this->_send;
-    }
+    public function getRead(): ?int { return $this->_read; }
 
-    public function setSend(mixed $value): self
-    {
-        $this->_send = $value;
-        return $this;
-    }
-
-    public function getReceived(): ?int
-    {
-        return $this->_received;
-    }
-
-    public function setReceived(mixed $value): self
-    {
-        $this->_received = $value;
-        return $this;
-    }
-
-    public function getRead(): ?int
-    {
-        return $this->_read;
-    }
-
-    public function setRead(mixed $value): self
-    {
-        $this->_read = $value;
-        return $this;
-    }
+    public function setRead(mixed $value): static { $this->_read = $value; return $this; }
 }

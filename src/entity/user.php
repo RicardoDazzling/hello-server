@@ -6,229 +6,99 @@ use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
 
 class User implements Entitable
 {
-    private ?int $_id = null;
+    protected ?int $_id = null;
 
-    private ?string $_uuid = null;
+    protected ?string $_uuid = null;
 
-    private ?bool $_status = null;
+    protected ?bool $_status = null;
 
-    private ?string $_name = null;
+    protected ?string $_name = null;
 
-    private ?string $_email = null;
+    protected ?string $_email = null;
 
-    private ?string $_default = null;
+    protected ?string $_default = null;
 
-    private ?string $_creation_date = null;
+    protected ?string $_creation_date = null;
 
     public function __get(string $name)
     {
-        if($name === 'id')
+        return match($name)
         {
-            return $this->_id;
-        }
-        if($name === 'uuid')
-        {
-            return $this->getUuid();
-        }
-        if($name === 'status')
-        {
-            return $this->getStatus();
-        }
-        if($name === 'name')
-        {
-            return $this->getName();
-        }
-        if($name === 'email')
-        {
-            return $this->getEmail();
-        }
-        if($name === 'default')
-        {
-            return $this->getDefault();
-        }
-        if($name === 'creation_date')
-        {
-            return $this->getCreationDate();
-        }
-        if($name === 'data')
-        {
-            return $this->getData();
-        }
-        throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name));
+            'id' => $this->_id,
+            'uuid' => $this->getUuid(),
+            'status' => $this->getStatus(),
+            'name' => $this->getName(),
+            'email' => $this->getEmail(),
+            'default' => $this->getDefault(),
+            'creation_date' => $this->getCreationDate(),
+            'data' => $this->getData(),
+            default => throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name))
+        };
     }
 
     public function __set(string $name, mixed $value)
     {
-        if($name === 'id')
+        return match($name)
         {
-            return $this->setId($value);
-        }
-        if($name === 'uuid')
-        {
-            return $this->setUuid($value);
-        }
-        if($name === 'status')
-        {
-            return $this->setStatus($value);
-        }
-        if($name === 'name')
-        {
-            return $this->setName($value);
-        }
-        if($name === 'email')
-        {
-            return $this->setEmail($value);
-        }
-        if($name === 'default')
-        {
-            return $this->setDefault($value);
-        }
-        if($name === 'creation_date')
-        {
-            return $this->setCreationDate($value);
-        }
-        if($name === 'data')
-        {
-            if(!is_array($value))
-            {
-                throw new InvalidPropertyOrMethod(sprintf(
-                    'Data value is from "%s" type and array type is required.', gettype($value)));
-            }
-            return $this->setData($value);
-        }
-        throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name));
+            'id' => $this->setId($value),
+            'uuid' => $this->setUuid($value),
+            'status' => $this->setStatus($value),
+            'name' => $this->setName($value),
+            'email' => $this->setEmail($value),
+            'default' => $this->setDefault($value),
+            'creation_date' => $this->setCreationDate($value),
+            'data' => $this->setData($value),
+            default => throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name))
+        };
     }
 
-    public function setId(int $id): self
+    public function setId(int $id): static { $this->_id = $id; return $this; }
+
+    public function setUuid(string $uuid): static
     {
-        $this->_id = $id;
-        return $this;
+        if(empty($this->_uuid)) { $this->_uuid = $uuid; return $this; }
+        else throw new InvalidPropertyOrMethod('UUID property already defined.');
     }
 
-    public function setUuid(string $uuid): self
-    {
-        if(empty($this->_uuid))
-        {
-            $this->_uuid = $uuid;
-            return $this;
-        }
-        throw new InvalidPropertyOrMethod('UUID property already defined.');
-    }
+    public function getUuid(): ?string { return $this->_uuid; }
 
-    public function getUuid(): ?string
-    {
-        return $this->_uuid;
-    }
+    public function setStatus(bool $status): static { $this->_status = $status; return $this; }
 
-    public function setStatus(bool $status): self
-    {
-        $this->_status = $status;
+    public function getStatus(): ?string { return $this->_status; }
 
-        return $this;
-    }
+    public function setName(string $name): static { $this->_name = $name; return $this; }
 
-    public function getStatus(): ?string
-    {
-        return $this->_status;
-    }
+    public function getName(): ?string { return $this->_name; }
 
-    public function setName(string $name): self
-    {
-        $this->_name = $name;
+    public function setEmail(string $email): static { $this->_email = $email; return $this; }
 
-        return $this;
-    }
+    public function getEmail(): ?string { return $this->_email; }
 
-    public function getName(): ?string
-    {
-        return $this->_name;
-    }
+    public function setDefault(string $default): static { $this->_default = $default; return $this; }
 
-    public function setEmail(string $email): self
-    {
-        $this->_email = $email;
+    public function getDefault(): ?string { return $this->_default; }
 
-        return $this;
-    }
+    public function setCreationDate(string $value): static { $this->_creation_date = $value; return $this; }
 
-    public function getEmail(): ?string
-    {
-        return $this->_email;
-    }
+    public function getCreationDate(): ?string { return $this->_creation_date; }
 
-    public function setDefault(string $default): self
-    {
-        $this->_default = $default;
-
-        return $this;
-    }
-
-    public function getDefault(): ?string
-    {
-        return $this->_default;
-    }
-
-    public function setCreationDate(string $creation_date): self
-    {
-        $this->_creation_date = $creation_date;
-
-        return $this;
-    }
-
-    public function getCreationDate(): ?string
-    {
-        return $this->_creation_date;
-    }
-
-    public function setData(array $data): self
-    {
-        if(count($data) > 0)
-        {
-            foreach ($data as $data_name => $data_value)
-            {
-                $this->__set($data_name, $data_value);
-            }
-        }
-        return $this;
-    }
+    public function setData(array $data): static { return setData($this, $data); }
 
     public function getData(): array
     {
         $array = [];
-        if(!empty($this->_uuid))
-        {
-            $array['uuid'] = $this->_uuid;
-        }
-        if(!empty($this->_status))
-        {
-            $array['status'] = $this->_status;
-        }
-        if(!empty($this->_name))
-        {
-            $array['name'] = $this->_name;
-        }
-        if(!empty($this->_email))
-        {
-            $array['email'] = $this->_email;
-        }
-        if(!empty($this->_default))
-        {
-            $array['default'] = $this->_default;
-        }
-        if(!empty($this->_creation_date))
-        {
-            $array['creation_date'] = $this->_creation_date;
-        }
+        if(!empty($this->_uuid)) $array['uuid'] = $this->_uuid;
+        if(!empty($this->_status)) $array['status'] = $this->_status;
+        if(!empty($this->_name)) $array['name'] = $this->_name;
+        if(!empty($this->_email)) $array['email'] = $this->_email;
+        if(!empty($this->_default)) $array['default'] = $this->_default;
+        if(!empty($this->_creation_date)) $array['creation_date'] = $this->_creation_date;
         return $array;
     }
 
     public function isEmpty(): bool
     {
-        if(empty($this->_uuid) && empty($this->_status) && empty($this->_name) && empty($this->_email)
-            && empty($this->_default) && empty($this->_creation_date))
-        {
-            return true;
-        }
-        return false;
+        return (empty($this->_uuid) && empty($this->_status) && empty($this->_name) && empty($this->_email)
+            && empty($this->_default) && empty($this->_creation_date));
     }
 }

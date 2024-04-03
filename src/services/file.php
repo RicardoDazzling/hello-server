@@ -88,6 +88,6 @@ class FileService extends BaseService implements Serviceable
 
     public function clean(): void
     {
-        File::clean();
+        FileDAL::clean();
     }
 }

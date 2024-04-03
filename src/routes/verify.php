@@ -1,7 +1,7 @@
 <?php
 namespace DazzRick\HelloServer;
 
-use DazzRick\HelloServer\dal\TokenDAL;
+use DazzRick\HelloServer\DAL\TokenDAL;
 use DazzRick\HelloServer\Entity\Token;
 use DazzRick\HelloServer\Exceptions\BadRequestException;
 use DazzRick\HelloServer\Exceptions\MethodNotAllowedException;

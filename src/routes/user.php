@@ -1,7 +1,7 @@
 <?php
 namespace DazzRick\HelloServer;
 
-use DazzRick\HelloServer\dal\TokenDAL;
+use DazzRick\HelloServer\DAL\TokenDAL;
 use DazzRick\HelloServer\Exceptions\MethodNotAllowedException;
 use DazzRick\HelloServer\Exceptions\ValidationException;
 use DazzRick\HelloServer\Services\UserService;

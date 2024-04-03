@@ -1,11 +1,14 @@
 <?php
 namespace DazzRick\HelloServer\Routes;
 
-use DazzRick\HelloServer\dal\TokenDAL;
+use DazzRick\HelloServer\DAL\TokenDAL;
 use DazzRick\HelloServer\Exceptions\MethodNotAllowedException;
 use DazzRick\HelloServer\Exceptions\ValidationException;
+use DazzRick\HelloServer\Services\CallService;
 use DazzRick\HelloServer\Services\FileService;
+use DazzRick\HelloServer\Services\LostService;
 use DazzRick\HelloServer\Services\MessageService;
+use DazzRick\HelloServer\Services\WritingService;
 use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
 
@@ -25,13 +28,13 @@ enum MessageAction: string
         $token = $_REQUEST['token'] ?? null;
         $uuid = $_REQUEST['uuid'] ?? null;
         $tokenEntity = TokenDAL::validate($token);
-        if($_REQUEST['resource'] === 'file')
-        {
-            $service = new FileService();
-        }
-        else{
-            $service = new MessageService();
-        }
+        $service = match ($_REQUEST['resource']){
+            'file' => new FileService(),
+            'call' => new CallService(),
+            'lost' => new LostService(),
+            'writing' => new WritingService(),
+            default => new MessageService()
+        };
 
         $response = [];
 

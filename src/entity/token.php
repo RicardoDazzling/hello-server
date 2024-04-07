@@ -4,7 +4,6 @@ namespace DazzRick\HelloServer\Entity;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use Override;
 use RuntimeException;
 use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
 
@@ -106,9 +105,9 @@ class Token implements Entitable
 
     public function getName(): ?string { $this->tokenAlreadyDefined(); return $this->_name; }
 
-    #[Override] public function setData(array $data): static { return setData($this, $data); }
+    public function setData(array $data): static { return setData($this, $data); }
 
-    #[Override] public function getData(): array
+    public function getData(): array
     {
         $array = [];
         if(!empty($this->_uuid)) $array['uuid'] = $this->_uuid;
@@ -119,5 +118,5 @@ class Token implements Entitable
         return $array;
     }
 
-    #[Override] public function isEmpty(): bool { return empty($this->_token); }
+    public function isEmpty(): bool { return empty($this->_token); }
 }

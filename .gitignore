@@ -14,3 +14,5 @@ phpunit.xml
 
 # Templates
 /static/email/index.html
+/static/json/events.json
+/static/json/gmail.json

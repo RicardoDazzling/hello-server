@@ -10,7 +10,7 @@ class User implements Entitable
 
     protected ?string $_uuid = null;
 
-    protected ?bool $_status = null;
+    protected ?bool $_online = null;
 
     protected ?string $_name = null;
 
@@ -18,7 +18,7 @@ class User implements Entitable
 
     protected ?string $_default = null;
 
-    protected ?string $_creation_date = null;
+    protected ?int $_creation_date = null;
 
     public function __get(string $name)
     {
@@ -26,7 +26,7 @@ class User implements Entitable
         {
             'id' => $this->_id,
             'uuid' => $this->getUuid(),
-            'status' => $this->getStatus(),
+            'online' => $this->getOnline(),
             'name' => $this->getName(),
             'email' => $this->getEmail(),
             'default' => $this->getDefault(),
@@ -42,7 +42,7 @@ class User implements Entitable
         {
             'id' => $this->setId($value),
             'uuid' => $this->setUuid($value),
-            'status' => $this->setStatus($value),
+            'online' => $this->setOnline($value),
             'name' => $this->setName($value),
             'email' => $this->setEmail($value),
             'default' => $this->setDefault($value),
@@ -62,9 +62,9 @@ class User implements Entitable
 
     public function getUuid(): ?string { return $this->_uuid; }
 
-    public function setStatus(bool $status): static { $this->_status = $status; return $this; }
+    public function setOnline(bool $online): static { $this->_online = $online; return $this; }
 
-    public function getStatus(): ?string { return $this->_status; }
+    public function getOnline(): ?string { return $this->_online; }
 
     public function setName(string $name): static { $this->_name = $name; return $this; }
 
@@ -80,7 +80,7 @@ class User implements Entitable
 
     public function setCreationDate(string $value): static { $this->_creation_date = $value; return $this; }
 
-    public function getCreationDate(): ?string { return $this->_creation_date; }
+    public function getCreationDate(): ?int { return $this->_creation_date; }
 
     public function setData(array $data): static { return setData($this, $data); }
 
@@ -88,7 +88,7 @@ class User implements Entitable
     {
         $array = [];
         if(!empty($this->_uuid)) $array['uuid'] = $this->_uuid;
-        if(!empty($this->_status)) $array['status'] = $this->_status;
+        if(!empty($this->_online)) $array['online'] = $this->_online;
         if(!empty($this->_name)) $array['name'] = $this->_name;
         if(!empty($this->_email)) $array['email'] = $this->_email;
         if(!empty($this->_default)) $array['default'] = $this->_default;
@@ -98,7 +98,7 @@ class User implements Entitable
 
     public function isEmpty(): bool
     {
-        return (empty($this->_uuid) && empty($this->_status) && empty($this->_name) && empty($this->_email)
+        return (empty($this->_uuid) && empty($this->_online) && empty($this->_name) && empty($this->_email)
             && empty($this->_default) && empty($this->_creation_date));
     }
 }

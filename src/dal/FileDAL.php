@@ -8,10 +8,10 @@ use RedBeanPHP\RedException\SQL;
 
 class FileDAL extends BaseDAL
 {
-    public const string TABLE_NAME = 'files';
-    public const array COLUMNS = ['uuid', 'from', 'to', 'content', 'send', 'received', 'read', 'open'];
-    public const array ALLOW_UPDATE_COLUMNS = ['content', 'received', 'read', 'open'];
-    public const string TIME = 'week';
+    public const TABLE_NAME = 'files';
+    public const COLUMNS = ['uuid', 'from', 'to', 'content', 'send', 'received', 'read', 'open'];
+    public const ALLOW_UPDATE_COLUMNS = ['content', 'received', 'read', 'open'];
+    public const TIME = 'week';
 
     public static function populatedEntity(array $data): File
     {

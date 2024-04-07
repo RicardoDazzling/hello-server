@@ -20,7 +20,9 @@ use RuntimeException;
 
 class BaseService
 {
-    public const string DATE_TIME_FORMAT = Serviceable::DATE_TIME_FORMAT;
+    public const DATE_TIME_FORMAT = Serviceable::DATE_TIME_FORMAT;
+    
+    public const TYPE = '';
 
     protected static function validation(array $data): void
     {
@@ -101,6 +103,10 @@ class BaseService
         return MessageDAL::remove($uuid);
     }
 
+    protected static function eventCreate(string $to): void { EventsService::update($to, static::TYPE); }
+
+    protected static function eventDelete(string $to): void { EventsService::delete($to, static::TYPE); }
+
     /**
      * @param array $data
      * @return Message|File|Call|Lost|Writing
@@ -111,29 +117,21 @@ class BaseService
     {
         self::validation($data);
 
-        $message = self::populateCreateEntity($data);
+        $entity = self::populateCreateEntity($data);
 
-        $message = self::dalCreate($message);
-        if ($message->isEmpty()) {
-            Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
-        }
-        return $message;
+        $entity = self::dalCreate($entity);
+        if ($entity->isEmpty()) Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
+        else self::eventCreate($entity->getTo());
+        return $entity;
     }
 
     public function _retrieve_all(string $user_uuid = ''): array
     {
-        if(empty($user_uuid))
-        {
-            throw new RuntimeException('Empty UUID!');
-        }
-        $messages = self::dalGetAll($user_uuid);
-        if(count($messages) <= 0)
-        {
-            return [];
-        }
-        return array_map(function (Message|File $message): array {
-            return $message->getData();
-        }, $messages);
+        if(empty($user_uuid)) throw new RuntimeException('Empty UUID!');
+        $entities = self::dalGetAll($user_uuid);
+        if(count($entities) <= 0) return [];
+        self::eventDelete($user_uuid);
+        return array_map(function (mixed $entity): array { return $entity->getData(); }, $entities);
     }
 
     /**
@@ -141,17 +139,13 @@ class BaseService
      */
     public function _retrieve(string $uuid): mixed
     {
-        if (!v::uuid()->validate($uuid)) {
-            throw new ValidationException("Invalid user UUID");
-        }
+        if (!v::uuid()->validate($uuid)) throw new ValidationException("Invalid user UUID");
 
-        $message = self::dalGet($uuid);
+        $entity = self::dalGet($uuid);
 
-        if ($message->isEmpty()) {
-            Http::setHeadersByCode(StatusCode::NOT_FOUND);
-        }
+        if ($entity->isEmpty()) Http::setHeadersByCode(StatusCode::NOT_FOUND);
 
-        return $message;
+        return $entity;
     }
 
     /**
@@ -159,22 +153,13 @@ class BaseService
      */
     public function _update(mixed $postBody, string $uuid): mixed
     {
-        if (!(v::uuid()->validate($uuid)))
-        {
-            throw new ValidationException("Invalid message/file UUID");
-        }
+        if (!(v::uuid()->validate($uuid))) throw new ValidationException("Invalid message/file UUID");
 
-        $message = self::populateEntity($postBody);
-        $message->setUuid($uuid);
-        try
-        {
-            $message = self::dalUpdate($message);
-        }catch (SQL){}
+        $entity = self::populateEntity($postBody)->setUuid($uuid);
+        try { $entity = self::dalUpdate($entity); } catch (SQL){}
 
-        if ($message->isEmpty()) {
-            Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
-        }
-        return $message;
+        if ($entity->isEmpty()) Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
+        return $entity;
     }
 
     /**
@@ -182,17 +167,11 @@ class BaseService
      */
     public function _remove(?string $uuid): mixed
     {
-        if(is_null($uuid)){
-            throw new ValidationException("UUID is required.");
-        }
-        if (!v::uuid()->validate($uuid)) {
-            throw new ValidationException("Invalid message UUID");
-        }
+        if(is_null($uuid)) throw new ValidationException("UUID is required.");
+        if (!v::uuid()->validate($uuid)) throw new ValidationException("Invalid message UUID");
         try {
             $entity = self::dalRemove($uuid);
-            if ($entity->isEmpty()){
-                throw new ValidationException("Unknown entity.");
-            }
+            if ($entity->isEmpty()) throw new ValidationException("Unknown entity.");
             return $entity;
         }
         catch (SQL)

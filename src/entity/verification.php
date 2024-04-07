@@ -2,7 +2,6 @@
 
 namespace DazzRick\HelloServer\Entity;
 
-use Override;
 use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
 
 class Verification implements Entitable
@@ -45,7 +44,7 @@ class Verification implements Entitable
         };
     }
 
-    #[Override] public function setId(int $id): static { $this->_id = $id; return $this; }
+    public function setId(int $id): static { $this->_id = $id; return $this; }
 
     public function setUuid(string $uuid): static
     {
@@ -55,9 +54,9 @@ class Verification implements Entitable
 
     public function getUuid(): string { return $this->_uuid; }
 
-    #[Override] public function setData(array $data): static { return setData($this, $data); }
+    public function setData(array $data): static { return setData($this, $data); }
 
-    #[Override] public function getData(): array
+    public function getData(): array
     {
         $array = [];
         if(!empty($this->_uuid)) $array['uuid'] = $this->_uuid;
@@ -67,7 +66,7 @@ class Verification implements Entitable
         return $array;
     }
 
-    #[Override] public function isEmpty(): bool
+    public function isEmpty(): bool
     {
         return (empty($this->_uuid) && empty($this->_code) && empty($this->_last_try) && empty($this->_try_number));
     }

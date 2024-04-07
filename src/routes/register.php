@@ -10,12 +10,11 @@ use PH7\PhpHttpResponseHeader\Http;
 
 function getResponse(): string
 {
-    $postBody = json_decode(file_get_contents('php://input'));
+    $content = file_get_contents('php://input');
+    $postBody = (array) json_decode($content);
     try {
         $user = (new UserService())->create($postBody);
-        if (http_response_code() !== StatusCode::OK || $user->isEmpty()) {
-            return json_encode(['Success' => false]);
-        }
+        if (http_response_code() !== StatusCode::OK || $user->isEmpty()) return json_encode(['Success' => false]);
         Http::setHeadersByCode(StatusCode::CREATED);
         (new VerificationService())->create($user);
     } catch (ValidationException $e){

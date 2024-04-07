@@ -2,7 +2,6 @@
 
 namespace DazzRick\HelloServer\Entity;
 
-use Override;
 use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
 
 class Call extends Base
@@ -35,7 +34,7 @@ class Call extends Base
         };
     }
 
-    #[Override] public function getData(): array
+    public function getData(): array
     {
         $array = parent::getData();
         if(!empty($this->_image)) $array['image'] = $this->_image;
@@ -43,7 +42,7 @@ class Call extends Base
         return $array;
     }
 
-    #[Override] public function isEmpty(): bool
+    public function isEmpty(): bool
     {
         return (!(parent::isEmpty()) && empty($this->_image) && empty($this->_audio));
     }

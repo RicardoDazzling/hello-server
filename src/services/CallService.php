@@ -11,6 +11,8 @@ use RedBeanPHP\RedException\SQL;
 class CallService extends BaseService implements Serviceable
 {
 
+    public const TYPE = 'call';
+
     protected static function validation(array $data): void
     {
         CallValidation::isCreationSchemaValid($data);
@@ -75,22 +77,22 @@ class CallService extends BaseService implements Serviceable
         return parent::_create($data);
     }
 
-    #[\Override] public function retrieve_all(string $user_uuid = ''): array
+    public function retrieve_all(string $user_uuid = ''): array
     {
         return parent::_retrieve_all($user_uuid);
     }
 
-    #[\Override] public function retrieve(string $uuid): Call
+    public function retrieve(string $uuid): Call
     {
         return parent::_retrieve($uuid);
     }
 
-    #[\Override] public function update(mixed $postBody, string $uuid): Call
+    public function update(mixed $postBody, string $uuid): Call
     {
         return parent::_update($postBody, $uuid);
     }
 
-    #[\Override] public function remove(?string $uuid): Call
+    public function remove(?string $uuid): Call
     {
         return parent::_remove($uuid);
     }

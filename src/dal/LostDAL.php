@@ -8,10 +8,10 @@ use RedBeanPHP\RedException\SQL;
 
 class LostDAL extends BaseDAL
 {
-    public const string TABLE_NAME = 'losts';
-    public const array COLUMNS = ['from', 'to', 'image', 'audio'];
-    public const array ALLOW_UPDATE_COLUMNS = ['image', 'audio'];
-    public const string TIME = 'week';
+    public const TABLE_NAME = 'losts';
+    public const COLUMNS = ['from', 'to', 'image', 'audio'];
+    public const ALLOW_UPDATE_COLUMNS = ['image', 'audio'];
+    public const TIME = 'week';
 
     public static function populatedEntity(array $data): Lost
     {

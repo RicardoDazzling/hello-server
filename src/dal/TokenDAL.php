@@ -12,7 +12,7 @@ use RedBeanPHP\RedException\SQL;
 
 class TokenDAL
 {
-    public const string TABLE_NAME = 'tokens';
+    public const TABLE_NAME = 'tokens';
 
     private static function convert(Token|string $token): Token
     {

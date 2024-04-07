@@ -8,10 +8,10 @@ use RedBeanPHP\RedException\SQL;
 
 class CallDAL extends BaseDAL
 {
-    public const string TABLE_NAME = 'calls';
-    public const array COLUMNS = ['from', 'to', 'image', 'audio'];
-    public const array ALLOW_UPDATE_COLUMNS = ['image', 'audio'];
-    public const string TIME = '';
+    public const TABLE_NAME = 'calls';
+    public const COLUMNS = ['from', 'to', 'image', 'audio'];
+    public const ALLOW_UPDATE_COLUMNS = ['image', 'audio'];
+    public const TIME = '';
 
     public static function populatedEntity(array $data): Call
     {

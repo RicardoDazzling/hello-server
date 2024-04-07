@@ -8,10 +8,10 @@ use RedBeanPHP\RedException\SQL;
 
 class WritingDAL extends BaseDAL
 {
-    public const string TABLE_NAME = 'writings';
-    public const array COLUMNS = ['from', 'to', 'image', 'audio'];
-    public const array ALLOW_UPDATE_COLUMNS = ['image', 'audio'];
-    public const string TIME = ''; # month === 2592000s ; week === 604800s
+    public const TABLE_NAME = 'writings';
+    public const COLUMNS = ['from', 'to', 'image', 'audio'];
+    public const ALLOW_UPDATE_COLUMNS = ['image', 'audio'];
+    public const TIME = ''; # month === 2592000s ; week === 604800s
 
     public static function populatedEntity(array $data): Writing
     {

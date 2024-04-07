@@ -11,6 +11,8 @@ use RedBeanPHP\RedException\SQL;
 class WritingService extends BaseService implements Serviceable
 {
 
+    public const TYPE = 'writing';
+
     protected static function validation(array $data): void
     {
         BaseValidation::isCreationSchemaValid($data);
@@ -73,22 +75,22 @@ class WritingService extends BaseService implements Serviceable
         return parent::_create($data);
     }
 
-    #[\Override] public function retrieve_all(string $user_uuid = ''): array
+    public function retrieve_all(string $user_uuid = ''): array
     {
         return parent::_retrieve_all($user_uuid);
     }
 
-    #[\Override] public function retrieve(string $uuid): Writing
+    public function retrieve(string $uuid): Writing
     {
         return parent::_retrieve($uuid);
     }
 
-    #[\Override] public function update(mixed $postBody, string $uuid): Writing
+    public function update(mixed $postBody, string $uuid): Writing
     {
         return parent::_update($postBody, $uuid);
     }
 
-    #[\Override] public function remove(?string $uuid): Writing
+    public function remove(?string $uuid): Writing
     {
         return parent::_remove($uuid);
     }

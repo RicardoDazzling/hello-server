@@ -5,9 +5,9 @@ namespace DazzRick\HelloServer\Validation;
 use DazzRick\HelloServer\Exceptions\ValidationException;
 use Respect\Validation\Validator as v;
 
-final class MessageValidation implements Validation
+final class MessageValidation implements Validate
 {
-    #[\Override] public static function isCreationSchemaValid(array $data): bool
+    public static function isCreationSchemaValid(array $data): bool
     {
         if(!BaseValidation::isCreationSchemaValid($data)) return false;
         if(!array_key_exists('content', $data))

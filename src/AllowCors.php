@@ -3,11 +3,11 @@ namespace DazzRick\HelloServer;
 
 class AllowCors
 {
-    private const string ALLOW_CORS_ORIGIN_KEY = 'Access-Control-Allow-Origin';
-    private const string ALLOW_CORS_ORIGIN_VALUE = '*';
+    private const ALLOW_CORS_ORIGIN_KEY = 'Access-Control-Allow-Origin';
+    private const ALLOW_CORS_ORIGIN_VALUE = '*';
 
-    private const string ALLOW_CORS_METHODS_KEY = 'Access-Control-Allow-Methods';
-    private const string ALLOW_CORS_METHODS_VALUE = 'GET, POST, PUT, DELETE, OPTIONS';
+    private const ALLOW_CORS_METHODS_KEY = 'Access-Control-Allow-Methods';
+    private const ALLOW_CORS_METHODS_VALUE = 'GET, POST, PUT, DELETE, OPTIONS';
 
     public function init(): void
     {

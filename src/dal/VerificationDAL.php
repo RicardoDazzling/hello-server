@@ -9,7 +9,7 @@ use RedBeanPHP\RedException\SQL;
 
 class VerificationDAL
 {
-    public const string TABLE_NAME = 'Verifications';
+    public const TABLE_NAME = 'Verifications';
 
     /**
      * @throws SQL

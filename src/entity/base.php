@@ -2,7 +2,6 @@
 
 namespace DazzRick\HelloServer\Entity;
 
-use Override;
 use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
 
 class Base implements Entitable
@@ -13,7 +12,7 @@ class Base implements Entitable
 
     protected ?string $_to = null;
 
-    #[Override] public function __get(string $name)
+    public function __get(string $name)
     {
         return match($name)
         {
@@ -25,7 +24,7 @@ class Base implements Entitable
         };
     }
 
-    #[Override] public function __set(string $name, mixed $value)
+    public function __set(string $name, mixed $value)
     {
         return match($name)
         {
@@ -41,9 +40,9 @@ class Base implements Entitable
      * @param array $data
      * @return static
      */
-    #[Override] public function setData(array $data): static { return setData($this, $data); }
+    public function setData(array $data): static { return setData($this, $data); }
 
-    #[Override] public function getData(): array
+    public function getData(): array
     {
         $array = [];
         if(!empty($this->_from)) $array['from'] = $this->_from;
@@ -55,9 +54,9 @@ class Base implements Entitable
      * @param int $id
      * @return static
      */
-    #[Override] public function setId(int $id): static { $this->_id = $id; return new static(); }
+    public function setId(int $id): static { $this->_id = $id; return new static(); }
 
-    #[Override] public function isEmpty(): bool { return (empty($this->_from) && empty($this->_to)); }
+    public function isEmpty(): bool { return (empty($this->_from) && empty($this->_to)); }
 
     protected function internalSetData(mixed $value): static
     {

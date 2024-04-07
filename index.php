@@ -13,13 +13,7 @@ $whoops->pushHandler(new WhoopsJsonResponseHandler);
 $whoops->register();
 
 
-require __DIR__ . '/src/allow_cors.php';
-require __DIR__ . '/src/config/config.inc.php';
-require __DIR__ . '/src/config/database.inc.php'; // TODO Could find sth cleaner
-require __DIR__ . '/src/validation/user.php';
-require __DIR__ . '/src/exceptions/validation.php';
-require __DIR__ . '/src/entity/user.php';
-require __DIR__ . '/src/dal/user.php';
-require __DIR__ . '/src/helpers/headers.inc.php';
-require __DIR__ . '/src/services/user.php';
-require __DIR__ . '/src/routes/routes.php';
+require __DIR__ . '/src/Config/config.inc.php';
+require __DIR__ . '/src/Config/database.inc.php'; // TODO Could find sth cleaner
+require __DIR__ . '/src/Helpers/headers.inc.php';
+require __DIR__ . '/src/Routes/routes.php';

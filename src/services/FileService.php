@@ -11,6 +11,8 @@ use RedBeanPHP\RedException\SQL;
 class FileService extends BaseService implements Serviceable
 {
 
+    public const TYPE = 'file';
+
     protected static function validation(array $data): void
     {
         FileValidation::isCreationSchemaValid($data);
@@ -66,22 +68,22 @@ class FileService extends BaseService implements Serviceable
         return parent::_create($data);
     }
 
-    #[\Override] public function retrieve_all(string $user_uuid = ''): array
+    public function retrieve_all(string $user_uuid = ''): array
     {
         return parent::_retrieve_all($user_uuid);
     }
 
-    #[\Override] public function retrieve(string $uuid): File
+    public function retrieve(string $uuid): File
     {
         return parent::_retrieve($uuid);
     }
 
-    #[\Override] public function update(mixed $postBody, string $uuid): File
+    public function update(mixed $postBody, string $uuid): File
     {
         return parent::_update($postBody, $uuid);
     }
 
-    #[\Override] public function remove(?string $uuid): File
+    public function remove(?string $uuid): File
     {
         return parent::_remove($uuid);
     }

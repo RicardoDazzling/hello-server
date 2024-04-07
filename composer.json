@@ -2,7 +2,7 @@
     "name": "dazzrick/hello-server",
     "description": "Backend API for Hello App that will be futurally developed",
     "require": {
-        "php": "^8.3.3",
+        "php": "^8.2",
         "firebase/php-jwt": "^6.10",
         "respect/validation": "^2.3",
         "ph-7/php-http-response-header": "^1.0",
@@ -11,7 +11,9 @@
         "gabordemooij/redbean": "^5.7",
         "vlucas/phpdotenv": "^5.6",
         "filp/whoops": "^2.15",
-        "phpmailer/phpmailer": "^6.9"
+        "symfony/mailer": "^7.0",
+        "symfony/google-mailer": "^7.0",
+        "hybridauth/hybridauth": "^3.11"
     },
     "license": "mit",
     "autoload": {
@@ -28,7 +30,7 @@
 
     "config": {
         "platform": {
-            "php": "8.3.3"
+            "php": "8.2"
         }
     }
 }

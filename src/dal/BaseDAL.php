@@ -13,10 +13,10 @@ use RedBeanPHP\RedException\SQL;
 
 class BaseDAL
 {
-    public const string TABLE_NAME = '';
-    public const array COLUMNS = [];
-    public const array ALLOW_UPDATE_COLUMNS = [];
-    public const string TIME = 'month'; # month === 2592000s ; week === 604800s
+    public const TABLE_NAME = '';
+    public const COLUMNS = [];
+    public const ALLOW_UPDATE_COLUMNS = [];
+    public const TIME = 'month'; # month === 2592000s ; week === 604800s
 
     /**
      * @param array $data

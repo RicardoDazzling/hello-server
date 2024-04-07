@@ -2,7 +2,6 @@
 
 namespace DazzRick\HelloServer\Entity;
 
-use Override;
 use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
 
 class Message extends Base
@@ -55,7 +54,7 @@ class Message extends Base
 
     public function getUuid(): ?string { return $this->_uuid; }
 
-    #[Override] public function getData(): array
+    public function getData(): array
     {
         $array = parent::getData();
         if(!empty($this->_uuid)) $array['uuid'] = $this->_uuid;
@@ -66,7 +65,7 @@ class Message extends Base
         return $array;
     }
 
-    #[Override] public function isEmpty(): bool
+    public function isEmpty(): bool
     {
         return (empty($this->_uuid) && !(parent::isEmpty()) && empty($this->_content) && empty($this->_send));
     }

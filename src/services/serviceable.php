@@ -6,7 +6,7 @@ use DazzRick\HelloServer\Entity\Entitable;
 
 interface Serviceable
 {
-    public const string DATE_TIME_FORMAT = 'Y-m-d H:i:s';
+    public const DATE_TIME_FORMAT = 'Y-m-d H:i:s';
 
     public function create(array $data): Entitable;
 

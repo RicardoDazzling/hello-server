@@ -10,6 +10,7 @@ use RedBeanPHP\RedException\SQL;
 
 class LostService extends BaseService implements Serviceable
 {
+    public string $_type = 'lost';
 
     protected static function validation(array $data): void
     {
@@ -75,22 +76,22 @@ class LostService extends BaseService implements Serviceable
         return parent::_create($data);
     }
 
-    #[\Override] public function retrieve_all(string $user_uuid = ''): array
+    public function retrieve_all(string $user_uuid = ''): array
     {
         return parent::_retrieve_all($user_uuid);
     }
 
-    #[\Override] public function retrieve(string $uuid): Lost
+    public function retrieve(string $uuid): Lost
     {
         return parent::_retrieve($uuid);
     }
 
-    #[\Override] public function update(mixed $postBody, string $uuid): Lost
+    public function update(mixed $postBody, string $uuid): Lost
     {
         return parent::_update($postBody, $uuid);
     }
 
-    #[\Override] public function remove(?string $uuid): Lost
+    public function remove(?string $uuid): Lost
     {
         return parent::_remove($uuid);
     }

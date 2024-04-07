@@ -9,33 +9,27 @@ use RedBeanPHP\RedException\SQL;
 
 final class UserDAL
 {
-    public const string TABLE_NAME = 'users';
+    public const TABLE_NAME = 'users';
 
     /**
      * @throws SQL
      */
     public static function create(User $entity): User
     {
-        if(!self::get_by_email($entity->getEmail())->isEmpty())
-        {
-            throw new ValidationException("EMail already exists.");
-        }
+        if(!self::get_by_email($entity->getEmail())->isEmpty()) throw new ValidationException("EMail already exists.");
         $bean = R::dispense(self::TABLE_NAME);
         $bean->uuid = $entity->getUuid();
-        $bean->status = $entity->getStatus();
+        $bean->online = $entity->getOnline();
         $bean->name = $entity->getName();
         $bean->email = $entity->getEmail();
         $bean->default = $entity->getDefault();
-        $bean->created_date = $entity->getCreationDate();
+        $bean->creation_date = $entity->getCreationDate();
 
         $id = R::store($bean);
 
         R::close();
 
-        if (gettype($id) === 'integer' || gettype($id) === 'string')
-        {
-            return $entity->setId($id);
-        }
+        if (gettype($id) === 'integer' || gettype($id) === 'string') return $entity->setId($id);
         return new User();
     }
     
@@ -119,7 +113,7 @@ final class UserDAL
         }
 
         $name = $entity->getName();
-        $status = $entity->getStatus();
+        $online = $entity->getOnline();
         $default = $entity->getDefault();
 
 
@@ -127,8 +121,8 @@ final class UserDAL
             $bean->name = $name;
         }
 
-        if ($status) {
-            $bean->status = $status;
+        if ($online) {
+            $bean->online = $online;
         }
 
         if ($default) {

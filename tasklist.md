@@ -12,6 +12,6 @@
 - [x] Call route, [call entity, call service](## "from, to, image, audio") and call DAL;
 - [x] Writing route, [writing entity, writing service](## "from, to"); and writing DAL;
 - [x] Lost route, [lost entity, lost service](## "from, to, type, send") and [lost DAL](## "will stay a month in the database");
-- [ ] Events [static file](## "writing, message, file, voice, video, lost");
-- [ ] Documentation;
+- [x] Events [static file](## "writing, message, file, call, lost");
+- [ ] Move google auth JSON to a static private folder;
 - [ ] Debug.

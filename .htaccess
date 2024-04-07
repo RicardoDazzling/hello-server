@@ -1,0 +1,16 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+       Options -MultiViews -Indexes
+    </IfModule>
+    Options +FollowSymLinks
+
+	RewriteEngine On
+	RewriteBase /
+
+	RewriteCond %{DOCUMENT_ROOT}/static/$1 -f
+	RewriteRule ^(.*)$ static/$1 [L]
+
+	RewriteCond %{THE_REQUEST} \s/static/ [NC,OR]
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule ^ index.php [L,QSA]
+</IfModule>

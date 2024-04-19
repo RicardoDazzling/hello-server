@@ -8,7 +8,10 @@ use DazzRick\HelloServer\Entity\File;
 use DazzRick\HelloServer\Entity\Lost;
 use DazzRick\HelloServer\Entity\Message;
 use DazzRick\HelloServer\Entity\Writing;
+use DazzRick\HelloServer\Exceptions\InternalServerException;
+use DazzRick\HelloServer\Exceptions\UnAuthorizedException;
 use DazzRick\HelloServer\Exceptions\ValidationException;
+use DazzRick\HelloServer\Validation\BaseValidation;
 use DazzRick\HelloServer\Validation\MessageValidation;
 use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
@@ -20,42 +23,47 @@ use RuntimeException;
 
 class BaseService
 {
-    public const DATE_TIME_FORMAT = Serviceable::DATE_TIME_FORMAT;
+    use BaseValidation;
     
     public const TYPE = '';
 
-    protected static function validation(array $data): void
+    public const SENDER = 'sender';
+
+    public const RECEIVER = 'receiver';
+
+    /**
+     * Function destined to verify the user access to a message.
+     * @param Message|File|Call|Lost|Writing $entity
+     * @return self::SENDER | self::RECEIVER
+     * @throws UnAuthorizedException
+     */
+    private static function userClassification(mixed $entity): string
     {
-        MessageValidation::isCreationSchemaValid($data);
+        global $jwt;
+        $uuid = $jwt->getUuid();
+        if($entity->getFromUuid() === $uuid) return self::SENDER;
+        if($entity->getToUuid() === $uuid) return self::RECEIVER;
+        throw new UnAuthorizedException('Unauthorized access to resource entity.');
     }
 
     /**
      * @return Message|File|Call|Lost|Writing
      */
-    protected static function emptyEntity(): mixed
-    {
-        return new Message();
-    }
+    protected static function emptyEntity(): mixed { return new Message(); }
 
     /**
      * @return Message|File|Call|Lost|Writing
      */
-    protected static function populateEntity(array $data): mixed
-    {
-        return (new Message())->setData($data);
-    }
+    protected static function populateEntity(array $data): mixed { return static::emptyEntity()->setData($data); }
 
     /**
      * @return Message|File|Call|Lost|Writing
      */
     protected static function populateCreateEntity(array $data): mixed
     {
-        return self::emptyEntity()
+        return static::emptyEntity()
             ->setUuid(Uuid::uuid4()->toString())
-            ->setFrom($data['from'])
-            ->setTo($data['to'])
-            ->setContent($data['content'])
-            ->setSend(time());
+            ->setData($data);
     }
 
     /**
@@ -64,48 +72,31 @@ class BaseService
      * @throws SQL
      * @throws RedException
      */
-    protected static function dalCreate(mixed $entity): mixed
-    {
-        return MessageDAL::create($entity);
-    }
+    protected static function dalCreate(mixed $entity): mixed { return MessageDAL::create($entity); }
 
-    protected static function dalGetAll(string $uuid): array
-    {
-        return MessageDAL::getAll($uuid);
-    }
+    protected static function dalGetAll(string $uuid): array { return MessageDAL::getAll($uuid); }
 
     /**
      * @param string $uuid
      * @return Message|File|Call|Lost|Writing
      */
-    protected static function dalGet(string $uuid): mixed
-    {
-        return MessageDAL::get($uuid);
-    }
+    protected static function dalGet(string $uuid): mixed { return MessageDAL::get($uuid); }
 
     /**
      * @param Message|File|Call|Lost|Writing $entity
      * @return Message|File|Call|Lost|Writing
      * @throws SQL
      */
-    protected static function dalUpdate(mixed $entity): mixed
-    {
-        return MessageDAL::update($entity);
-    }
+    protected static function dalUpdate(mixed $entity): mixed { return MessageDAL::update($entity); }
 
     /**
      * @param string $uuid
      * @return Message|File|Call|Lost|Writing
      * @throws SQL
      */
-    protected static function dalRemove(string $uuid): mixed
-    {
-        return MessageDAL::remove($uuid);
-    }
+    protected static function dalRemove(string $uuid): mixed { return MessageDAL::remove($uuid); }
 
-    protected static function eventCreate(string $to): void { EventsService::update($to, static::TYPE); }
-
-    protected static function eventDelete(string $to): void { EventsService::delete($to, static::TYPE); }
+    protected static function dalReceived(): void { MessageDAL::received(); }
 
     /**
      * @param array $data
@@ -115,23 +106,25 @@ class BaseService
      */
     public function _create(array $data): mixed
     {
-        self::validation($data);
+        $data = static::isCreationSchemaValid($data);
 
-        $entity = self::populateCreateEntity($data);
+        $entity = static::populateCreateEntity($data);
 
-        $entity = self::dalCreate($entity);
+        $entity = static::dalCreate($entity);
         if ($entity->isEmpty()) Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
-        else self::eventCreate($entity->getTo());
         return $entity;
     }
 
     public function _retrieve_all(string $user_uuid = ''): array
     {
         if(empty($user_uuid)) throw new RuntimeException('Empty UUID!');
-        $entities = self::dalGetAll($user_uuid);
+        $entities = static::dalGetAll($user_uuid);
+        if (in_array(static::TYPE, ['message', 'file'])) {
+            if(empty($_REQUEST['filter'])) $_REQUEST['filter'] = 'sent';
+            static::dalReceived();
+        }
         if(count($entities) <= 0) return [];
-        self::eventDelete($user_uuid);
-        return array_map(function (mixed $entity): array { return $entity->getData(); }, $entities);
+        return array_map(function (mixed $entity): array { return $entity->getData(true); }, $entities);
     }
 
     /**
@@ -141,9 +134,10 @@ class BaseService
     {
         if (!v::uuid()->validate($uuid)) throw new ValidationException("Invalid user UUID");
 
-        $entity = self::dalGet($uuid);
+        $entity = static::dalGet($uuid);
 
         if ($entity->isEmpty()) Http::setHeadersByCode(StatusCode::NOT_FOUND);
+        else self::userClassification($entity);
 
         return $entity;
     }
@@ -153,13 +147,19 @@ class BaseService
      */
     public function _update(mixed $postBody, string $uuid): mixed
     {
-        if (!(v::uuid()->validate($uuid))) throw new ValidationException("Invalid message/file UUID");
+        if (!(v::uuid()->validate($uuid))) throw new ValidationException("Invalid update UUID");
+        $oldEntity = static::dalGet($uuid);
+        if ($oldEntity->isEmpty()) throw new ValidationException('UUID doens\'t exists');
+        $classification = self::userClassification($oldEntity);
 
-        $entity = self::populateEntity($postBody)->setUuid($uuid);
-        try { $entity = self::dalUpdate($entity); } catch (SQL){}
+        $postBody = static::isUpdateSchemaValid($postBody, $classification, $oldEntity);
+
+        $entity = static::populateEntity($postBody)->setUuid($uuid);
+        $entity = static::dalUpdate($entity);
 
         if ($entity->isEmpty()) Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
-        return $entity;
+
+        return $entity->setEmpty($oldEntity->getData());
     }
 
     /**
@@ -170,14 +170,14 @@ class BaseService
         if(is_null($uuid)) throw new ValidationException("UUID is required.");
         if (!v::uuid()->validate($uuid)) throw new ValidationException("Invalid message UUID");
         try {
-            $entity = self::dalRemove($uuid);
+            $entity = static::dalRemove($uuid);
             if ($entity->isEmpty()) throw new ValidationException("Unknown entity.");
             return $entity;
         }
         catch (SQL)
         {
             Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
-            return self::emptyEntity();
+            return static::emptyEntity();
         }
     }
 }

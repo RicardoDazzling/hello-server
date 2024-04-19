@@ -22,7 +22,6 @@ final class UserDAL
         $bean->online = $entity->getOnline();
         $bean->name = $entity->getName();
         $bean->email = $entity->getEmail();
-        $bean->default = $entity->getDefault();
         $bean->creation_date = $entity->getCreationDate();
 
         $id = R::store($bean);
@@ -43,10 +42,7 @@ final class UserDAL
     {
         $bean = self::_find($uuid);
 
-        if(is_null($bean))
-        {
-            return new User();
-        }
+        if(is_null($bean)) return new User();
         return (new User())->setData($bean->export());
     }
 
@@ -55,10 +51,7 @@ final class UserDAL
         $bindings = ['email' => $email];
         $bean = R::findOne(self::TABLE_NAME, 'email = :email ', $bindings);
 
-        if(is_null($bean))
-        {
-            return new User();
-        }
+        if(is_null($bean)) return new User();
         return (new User())->setData($bean->export());
     }
 
@@ -69,10 +62,7 @@ final class UserDAL
     public static function getAll(): array
     {
         $users = R::findAll(self::TABLE_NAME);
-        if (count($users) <= 0)
-        {
-            return [];
-        }
+        if (count($users) <= 0) return [];
         return array_map(function (object $bean): object {
             return (new User())->setData($bean->export());
         }, $users);
@@ -85,19 +75,13 @@ final class UserDAL
     {
         $bean = self::_find($uuid);
 
-        if (is_null($bean))
-        {
-            return new User();
-        }
+        if (is_null($bean)) return new User();
 
         $entity = (new User())->setData($bean->export());
         $works = (bool)R::trash($bean);
 
-        if ($works)
-        {
-            return $entity;
-        }
-        throw new SQL('Remove error!');
+        if ($works) return $entity;
+        else throw new SQL('Remove error!');
     }
 
     /**
@@ -108,35 +92,30 @@ final class UserDAL
         $bean = self::_find($entity->getUuid());
 
         // If the user exists, update it
-        if (is_null($bean)) {
-            return new User();
-        }
+        if (is_null($bean))  return new User();
 
         $name = $entity->getName();
         $online = $entity->getOnline();
-        $default = $entity->getDefault();
 
+        if (!is_null($name)) $bean->name = $name;
 
-        if ($name) {
-            $bean->name = $name;
-        }
-
-        if ($online) {
-            $bean->online = $online;
-        }
-
-        if ($default) {
-            $bean->default = $default;
-        }
+        if (!is_null($online)) $bean->online = $online;
 
         // save the user
         $id = R::store($bean);
 
-        if(gettype($id) === 'integer' || gettype($id) === 'string')
-        {
-            return $entity->setId($id);
-        }
+        if(gettype($id) === 'integer' || gettype($id) === 'string') return $entity->setId($id);
+        else return new User();
+    }
 
-        return new User();
+    public static function online(array $email_list): array
+    {
+        $table_name = self::TABLE_NAME;
+        $email_list_string = str_replace(['{', '[', '}', ']', '"'], ['(', '(', ')', ')', '\''], json_encode($email_list));
+        $list = R::getAll("SELECT email FROM $table_name WHERE email IN $email_list_string AND online=true");
+        $list = array_map(function (array $data) { return $data['email']; }, $list);
+        $new_email_list = [];
+        foreach ($email_list as $email) $new_email_list[$email] = in_array($email, $list);
+        return $new_email_list;
     }
 }

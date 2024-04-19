@@ -4,19 +4,16 @@ namespace DazzRick\HelloServer\Validation;
 
 use DazzRick\HelloServer\Exceptions\ValidationException;
 
-final class LostValidation implements Validate
+trait LostValidation
 {
-    public static function isCreationSchemaValid(array $data): bool
+    use BaseValidation { BaseValidation::isCreationSchemaValid as isBaseCreationSchemaValid;}
+    public static function isCreationSchemaValid(array $data): array
     {
-        if(!BaseValidation::isCreationSchemaValid($data)) return false;
-        if(!array_key_exists('type', $data))
-        {
-            throw new ValidationException('Missing arguments inside the payload.');
-        }
-        if(in_array($data['type'], ['audio', 'video'], TRUE))
-        {
-            throw new ValidationException('Invalid typé.');
-        }
-        return true;
+        $new_data = self::isBaseCreationSchemaValid($data);
+        if(!array_key_exists('type', $new_data))
+            throw new ValidationException('Missing "type" inside the payload: ' . "\n". json_encode($data));
+        if(in_array($new_data['type'], ['audio', 'video'], TRUE))
+            throw new ValidationException('Invalid type.');
+        return $new_data;
     }
 }

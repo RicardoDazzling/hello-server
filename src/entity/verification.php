@@ -48,7 +48,7 @@ class Verification implements Entitable
 
     public function setUuid(string $uuid): static
     {
-        if(empty($this->_uuid)) { $this->_uuid = $uuid; return $this; }
+        if(is_null($this->_uuid)) { $this->_uuid = $uuid; return $this; }
         else throw new InvalidPropertyOrMethod('UUID property already defined.');
     }
 
@@ -59,16 +59,16 @@ class Verification implements Entitable
     public function getData(): array
     {
         $array = [];
-        if(!empty($this->_uuid)) $array['uuid'] = $this->_uuid;
-        if(!empty($this->_code)) $array['code'] = $this->_code;
-        if(!empty($this->_last_try)) $array['last_try'] = $this->_last_try;
-        if(!empty($this->_try_number)) $array['email'] = $this->_try_number;
+        if(!is_null($this->_uuid)) $array['uuid'] = $this->_uuid;
+        if(!is_null($this->_code)) $array['code'] = $this->_code;
+        if(!is_null($this->_last_try)) $array['last_try'] = $this->_last_try;
+        if(!is_null($this->_try_number)) $array['email'] = $this->_try_number;
         return $array;
     }
 
     public function isEmpty(): bool
     {
-        return (empty($this->_uuid) && empty($this->_code) && empty($this->_last_try) && empty($this->_try_number));
+        return (is_null($this->_uuid) && is_null($this->_code) && is_null($this->_last_try) && is_null($this->_try_number));
     }
 
     public function getCode(): ?string { return $this->_code; }

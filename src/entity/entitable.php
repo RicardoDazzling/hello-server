@@ -27,3 +27,15 @@ function setData(mixed $self, array $data){
     }
     return $self;
 }
+
+function setEmpty(mixed $self, array $data){
+    if(count($data) > 0)
+    {
+        foreach ($data as $data_name => $data_value)
+        {
+            if (is_null($self->__get($data_name)))
+                $self->__set($data_name, $data_value);
+        }
+    }
+    return $self;
+}

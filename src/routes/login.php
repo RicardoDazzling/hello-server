@@ -1,5 +1,4 @@
 <?php
-namespace DazzRick\HelloServer;
 
 use DazzRick\HelloServer\Exceptions\BadRequestException;
 use DazzRick\HelloServer\Exceptions\MethodNotAllowedException;
@@ -12,7 +11,7 @@ function getResponse(): string
 {
     $email = $_REQUEST['email'] ?? null;
     if (is_null($email)) throw new BadRequestException('Email is required.');
-    if(!(v::email()->validate($email))) throw new BadRequestException('Email is invalid.');
+    if(!(v::email()->validate($email))) throw new BadRequestException("Email is invalid: '".$email."'.");
     $user = (new UserService())->retrieve(email: $email);
     if($user->isEmpty()) throw new NotFoundException('User not found.');
     (new VerificationService())->create($user);

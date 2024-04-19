@@ -24,12 +24,10 @@ final class MailerService
         return str_replace(['%code%', '%name%'], [$code, $name], $mail_body);
     }
 
-    public static function sendVerification(User $entity): string
+    private static function sendGmail(string $code, string $name, string $email): void
     {
-        $code = '' . rand(0, 9) . rand(0, 9) . rand(0, 9) . rand(0, 9) . rand(0, 9) . rand(0, 9);
-        $name = $entity->getName();
-
         $json = self::readJson();
+        if(!in_array('access_token', $json['token'])) self::callback();
 
         try {
             $transport = Transport::fromDsn('gmail+smtp://'
@@ -42,7 +40,7 @@ final class MailerService
 
             $message = (new Email())
                 ->from('Hello <'.$_ENV['USER_GMAIL'].'>')
-                ->to($entity->getEmail())
+                ->to($email)
                 ->subject('Verificação de email')
                 ->html(self::getVerificationBody($code, $name));
 
@@ -64,10 +62,45 @@ final class MailerService
 
                 self::updateToken($data);
 
-                self::sendVerification($entity);
+                self::sendGmail($code, $name, $email);
             }
             else throw $e;
         }
+    }
+
+    private static function sendEMailJS(string $code, string $name, string $email)
+    {
+        $url = 'https://api.emailjs.com/api/v1.0/email/send';
+        $data = [
+            'service_id'=>$_ENV['EMJS_SERVICE'],
+            'template_id'=>$_ENV['EMJS_TEMPLATE'],
+            'user_id'=>$_ENV['EMJS_PUBLIC'],
+            'template_params'=>[ 'code'=>$code, 'name'=>$name, 'to'=>$email ],
+            'accessToken'=>$_ENV['EMJS_PRIVATE']
+        ];
+
+        $options = [
+            'http' => [
+                'header' => "Content-type: application/json\r\n",
+                'method' => 'POST',
+                'content' => json_encode($data),
+            ],
+        ];
+
+        $context = stream_context_create($options);
+        $result = file_get_contents($url, false, $context);
+        if ($result === false) throw new InternalServerException('EMail response is false.');
+    }
+
+    public static function sendVerification(User $entity): string
+    {
+        $code = '' . rand(0, 9) . rand(0, 9) . rand(0, 9) . rand(0, 9) . rand(0, 9) . rand(0, 9);
+
+        match ($_ENV['MAIL_MODE']) {
+            'gmail' => self::sendGmail($code, $entity->getName(), $entity->getEmail()),
+            'emailjs' => self::sendEMailJS($code, $entity->getName(), $entity->getEmail()),
+            default => throw new InternalServerException('"MAIL_MODE" env as not set or is invalid.')
+        };
         return $code;
     }
 
@@ -98,5 +131,11 @@ final class MailerService
         return new HAdapter( $config );
     }
 
-    public static function callback(): void { self::updateToken(self::getAdapter()->getAccessToken()); }
+    public static function callback(): void
+    {
+        $adapter = self::getAdapter();
+        $accessToken = $adapter->getAccessToken();
+        var_dump('Access token: {' . json_encode($accessToken) . '}');
+        self::updateToken(self::getAdapter()->getAccessToken());
+    }
 }

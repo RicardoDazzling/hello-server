@@ -9,17 +9,14 @@ use RedBeanPHP\RedException\SQL;
 
 class VerificationDAL
 {
-    public const TABLE_NAME = 'Verifications';
+    public const TABLE_NAME = 'verifications';
 
     /**
      * @throws SQL
      */
     public static function create(Verification $entity): Verification
     {
-        if(!self::get($entity->getUuid())->isEmpty())
-        {
-            throw new ValidationException("UUID already exists.");
-        }
+        if(!self::get($entity->getUuid())->isEmpty()) throw new ValidationException("UUID already exists.");
         $bean = R::dispense(self::TABLE_NAME);
         $bean->uuid = $entity->getUuid();
         $bean->code = $entity->getCode();
@@ -30,11 +27,8 @@ class VerificationDAL
 
         R::close();
 
-        if (gettype($id) === 'integer' || gettype($id) === 'string')
-        {
-            return $entity->setId($id);
-        }
-        return new Verification();
+        if (gettype($id) === 'integer' || gettype($id) === 'string') return $entity->setId($id);
+        else return new Verification();
     }
 
     private static function _find(string $uuid): NULL|\RedBeanPHP\OODBBean

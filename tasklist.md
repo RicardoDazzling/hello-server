@@ -13,5 +13,14 @@
 - [x] Writing route, [writing entity, writing service](## "from, to"); and writing DAL;
 - [x] Lost route, [lost entity, lost service](## "from, to, type, send") and [lost DAL](## "will stay a month in the database");
 - [x] Events [static file](## "writing, message, file, call, lost");
-- [ ] Move google auth JSON to a static private folder;
+- [x] Move google auth JSON to a [static private folder](## "File added to .htaccess");
+- [x] Update limitations (from->content, to->[state](## "read, received, opened");
+- [x] Change access from messages, only receiver and sender;
+- [x] Make base state readonly;
+- [x] Replace sended=>sent, readed=>read, openned=>opened;
+- [x] Separated retrieve_all to [sender](## "received, read and opened filters") and [receiver](## "sent and no filter.");
+- [x] Filter value;
+- [ ] Group route, [group entity, group service](## "uuid, photo, name, description, creation_date, code") and group DAL;
+- [ ] GroupMessage route, [group message entity, group message service](## "from, to, content, send, received, read") and [group message DAL](## "will a month in the database");
+- [ ] GroupParticipant route, [group participant entity, group participant service](## "participant, group"), group participant DAL;
 - [ ] Debug.

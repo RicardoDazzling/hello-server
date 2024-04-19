@@ -38,13 +38,13 @@ class VerificationService
         if($try_number >= 1)
         {
             $wait_time = $entity->getLastTry() + (5 * pow($entity->getTryNumber(), 2));
-            if(time() < $wait_time) throw new BadRequestException(
+            if(intdiv(time(), 60) < $wait_time) throw new BadRequestException(
                 sprintf('You need to wait until "%s" to continue', date(Serviceable::DATE_TIME_FORMAT, $wait_time)));
         }
         if($code !== $entity->getCode())
         {
             $entity->setTryNumber($entity->getTryNumber() + 1);
-            $entity->setLastTry(time());
+            $entity->setLastTry(intdiv(time(), 60));
             VerificationDAL::update($entity);
             throw new BadRequestException('Incorrect code.');
         }

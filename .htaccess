@@ -3,14 +3,23 @@
        Options -MultiViews -Indexes
     </IfModule>
     Options +FollowSymLinks
+	
+	<FilesMatch "\.(htaccess|htpasswd|ini|log|sh|inc|bak)$">
+		Order Allow,Deny
+		Deny from all
+	</FilesMatch>
+	
+	<FilesMatch gmail.json|events.sample.json|gmail.sample.json>
+		Order Allow,Deny
+		Deny from all
+	</FilesMatch>
 
 	RewriteEngine On
-	RewriteBase /
-
-	RewriteCond %{DOCUMENT_ROOT}/static/$1 -f
-	RewriteRule ^(.*)$ static/$1 [L]
-
-	RewriteCond %{THE_REQUEST} \s/static/ [NC,OR]
+	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^ index.php [L,QSA]
+	RewriteRule ^([^/]+)/?([^/]+)?/?$ index.php?resource=$1&uuid=$2 [QSA,L]
+
+	RewriteCond %{REQUEST_URI} \.php [NC]
+	RewriteRule ^([^/]+)/?([^/]+)?/?$ index.php?resource=$1&uuid=$2 [QSA,L]
+
 </IfModule>

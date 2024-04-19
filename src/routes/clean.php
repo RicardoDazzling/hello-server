@@ -1,5 +1,4 @@
 <?php
-namespace DazzRick\HelloServer;
 
 use DazzRick\HelloServer\Exceptions\BadRequestException;
 use DazzRick\HelloServer\Services\FileService;

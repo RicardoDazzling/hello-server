@@ -8,7 +8,7 @@ class Lost extends Base
 {
     protected ?string $_type = null;
 
-    protected ?int $_send = null;
+    protected ?int $_sent = null;
 
     public function __get(string $name)
     {
@@ -17,7 +17,7 @@ class Lost extends Base
         return match($name)
         {
             'type' => $this->getType(),
-            'send' => $this->getSend(),
+            'sent' => $this->getSend(),
             default => throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name))
         };
     }
@@ -29,29 +29,29 @@ class Lost extends Base
         return match($name)
         {
             'type' => $this->setType($value),
-            'send' => $this->setSend($value),
+            'sent' => $this->setSend($value),
             default => throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name))
         };
     }
 
-    public function getData(): array
+    public function getData(bool $echo = false): array
     {
-        $array = parent::getData();
-        if(!empty($this->_type)) $array['type'] = $this->_type;
-        if(!empty($this->_send)) $array['send'] = $this->_send;
+        $array = parent::getData($echo);
+        if(!is_null($this->_type)) $array['type'] = $this->_type;
+        if(!is_null($this->_sent)) $array['sent'] = $this->_sent;
         return $array;
     }
 
     public function isEmpty(): bool
     {
-        return (!(parent::isEmpty()) && empty($this->_type) && empty($this->_send));
+        return (parent::isEmpty() && is_null($this->_type) && is_null($this->_sent));
     }
 
     public function getType(): ?string { return $this->_type; }
 
     public function setType(mixed $type): static { $this->_type = $type; return $this; }
 
-    public function getSend(): ?string { return $this->_send; }
+    public function getSend(): ?string { return $this->_sent; }
 
-    public function setSend(mixed $send): static { $this->_send = $send; return $this; }
+    public function setSend(mixed $sent): static { $this->_sent = $sent; return $this; }
 }

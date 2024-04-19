@@ -6,11 +6,9 @@ use Ramsey\Collection\Exception\InvalidPropertyOrMethod;
 
 class Message extends Base
 {
-    protected ?string $_uuid = null;
-
     protected ?string $_content = null;
 
-    protected ?int $_send = null;
+    protected ?int $_sent = null;
 
     protected ?int $_received = null;
 
@@ -22,9 +20,8 @@ class Message extends Base
         if($parent !== false) return $parent;
         return match($name)
         {
-            'uuid' => $this->getUuid(),
             'content' => $this->getContent(),
-            'send' => $this->getSend(),
+            'sent' => $this->getSend(),
             'received' => $this->getReceived(),
             'read' => $this->getRead(),
             default => throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name))
@@ -37,46 +34,36 @@ class Message extends Base
         if($parent !== false) return $parent;
         return match($name)
         {
-            'uuid' => $this->setUuid($value),
             'content' => $this->setContent($value),
-            'send' => $this->setSend($value),
+            'sent' => $this->setSend($value),
             'received' => $this->setReceived($value),
             'read' => $this->setRead($value),
             default => throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name))
         };
     }
 
-    public function setUuid(string $uuid): static
+    public function getData(bool $echo = false): array
     {
-        if(empty($this->_uuid)) { $this->_uuid = $uuid; return $this; }
-        throw new InvalidPropertyOrMethod('UUID property already defined.');
-    }
-
-    public function getUuid(): ?string { return $this->_uuid; }
-
-    public function getData(): array
-    {
-        $array = parent::getData();
-        if(!empty($this->_uuid)) $array['uuid'] = $this->_uuid;
-        if(!empty($this->_content)) $array['content'] = $this->_content;
-        if(!empty($this->_send)) $array['send'] = $this->_send;
-        if(!empty($this->_received)) $array['received'] = $this->_received;
-        if(!empty($this->_read)) $array['read'] = $this->_read;
+        $array = parent::getData($echo);
+        if(!is_null($this->_content)) $array['content'] = $this->_content;
+        if(!is_null($this->_sent)) $array['sent'] = $this->_sent;
+        if(!is_null($this->_received)) $array['received'] = $this->_received;
+        if(!is_null($this->_read)) $array['read'] = $this->_read;
         return $array;
     }
 
     public function isEmpty(): bool
     {
-        return (empty($this->_uuid) && !(parent::isEmpty()) && empty($this->_content) && empty($this->_send));
+        return (parent::isEmpty() && is_null($this->_content) && is_null($this->_sent));
     }
 
     public function getContent(): ?string { return $this->_content; }
 
     public function setContent(mixed $value): static { $this->_content = $value; return $this; }
 
-    public function getSend(): ?int { return $this->_send; }
+    public function getSend(): ?int { return $this->_sent; }
 
-    public function setSend(mixed $value): static { $this->_send = $value; return $this; }
+    public function setSend(mixed $value): static { $this->_sent = $value; return $this; }
 
     public function getReceived(): ?int { return $this->_received; }
 

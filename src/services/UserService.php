@@ -3,6 +3,7 @@ namespace DazzRick\HelloServer\Services;
 
 use DazzRick\HelloServer\DAL\UserDAL;
 use DazzRick\HelloServer\Entity\User;
+use DazzRick\HelloServer\Exceptions\InternalServerException;
 use DazzRick\HelloServer\Exceptions\ValidationException;
 use DazzRick\HelloServer\Validation\UserValidation;
 use PH7\JustHttp\StatusCode;
@@ -23,8 +24,7 @@ class UserService implements Serviceable
             ->setOnline($data['online'])
             ->setName($data['name'])
             ->setEmail($data['email'])
-            ->setDefault($data['default'])
-            ->setCreationDate(time());
+            ->setCreationDate(intdiv(time(), 60));
 
         $user = UserDAL::create($user);
         if ($user->isEmpty()) Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
@@ -92,5 +92,12 @@ class UserService implements Serviceable
             Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
             return new User();
         }
+    }
+
+    public function search(?string $uuid=null, ?string $email=null): User
+    {
+        $user = $this->retrieve($uuid, $email);
+        if(!$user->isEmpty()) { $user->setData(['uuid'=>null, 'creation_date'=>null]);}
+        return $user;
     }
 }

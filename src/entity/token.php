@@ -36,7 +36,7 @@ class Token implements Entitable
 
     private function tokenAlreadyDefined(): void
     {
-        if(empty($this->_token)) throw new RuntimeException('Token is not defined');
+        if(is_null($this->_token)) throw new RuntimeException('Token is not defined');
     }
 
     private function readonly(string $name): void
@@ -74,16 +74,16 @@ class Token implements Entitable
         };
     }
 
-    public function setId(int $id): static { $this->readonly('ID'); }
+    public function setId(int $id): static { $this->_id = $id; return $this; }
 
     public function setToken(string $token): static
     {
         $this->_token = $token;
         $payload = /*(array)*/JWT::decode($token, new Key($_ENV['JWT_KEY'], $_ENV['JWT_ALG']));
         $this->_time = $payload->iat;
-        $this->_uuid = $payload->data['data'];
-        $this->_name = $payload->data['name'];
-        $this->_email = $payload->data['email'];
+        $this->_uuid = $payload->data->uuid;
+        $this->_name = $payload->data->name;
+        $this->_email = $payload->data->email;
         return $this;
     }
 
@@ -110,13 +110,13 @@ class Token implements Entitable
     public function getData(): array
     {
         $array = [];
-        if(!empty($this->_uuid)) $array['uuid'] = $this->_uuid;
-        if(!empty($this->_token)) $array['token'] = $this->_token;
-        if(!empty($this->_time)) $array['time'] = $this->_time;
-        if(!empty($this->_email)) $array['email'] = $this->_email;
-        if(!empty($this->_name)) $array['name'] = $this->_name;
+        if(!is_null($this->_uuid)) $array['uuid'] = $this->_uuid;
+        if(!is_null($this->_token)) $array['token'] = $this->_token;
+        if(!is_null($this->_time)) $array['time'] = $this->_time;
+        if(!is_null($this->_email)) $array['email'] = $this->_email;
+        if(!is_null($this->_name)) $array['name'] = $this->_name;
         return $array;
     }
 
-    public function isEmpty(): bool { return empty($this->_token); }
+    public function isEmpty(): bool { return is_null($this->_token); }
 }

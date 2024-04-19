@@ -34,17 +34,17 @@ class Call extends Base
         };
     }
 
-    public function getData(): array
+    public function getData(bool $echo = false): array
     {
-        $array = parent::getData();
-        if(!empty($this->_image)) $array['image'] = $this->_image;
-        if(!empty($this->_audio)) $array['audio'] = $this->_audio;
+        $array = parent::getData($echo);
+        if(!is_null($this->_image)) $array['image'] = $this->_image;
+        if(!is_null($this->_audio)) $array['audio'] = $this->_audio;
         return $array;
     }
 
     public function isEmpty(): bool
     {
-        return (!(parent::isEmpty()) && empty($this->_image) && empty($this->_audio));
+        return (parent::isEmpty() && is_null($this->_image) && is_null($this->_audio));
     }
 
     public function getImage(): ?string { return $this->_image; }

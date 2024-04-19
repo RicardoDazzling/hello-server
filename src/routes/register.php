@@ -1,5 +1,4 @@
 <?php
-namespace DazzRick\HelloServer;
 
 use DazzRick\HelloServer\Exceptions\MethodNotAllowedException;
 use DazzRick\HelloServer\Exceptions\ValidationException;

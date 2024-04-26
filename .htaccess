@@ -17,9 +17,9 @@
 	RewriteEngine On
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^([^/]+)/?([^/]+)?/?$ index.php?resource=$1&uuid=$2 [QSA,L]
+	RewriteRule ^([^/]+)/?([^/]+)?/?$ index.php?resource=$1&subresource=$2 [QSA,L]
 
 	RewriteCond %{REQUEST_URI} \.php [NC]
-	RewriteRule ^([^/]+)/?([^/]+)?/?$ index.php?resource=$1&uuid=$2 [QSA,L]
+	RewriteRule ^([^/]+)/?([^/]+)?/?$ index.php?resource=$1&subresource=$2 [QSA,L]
 
 </IfModule>

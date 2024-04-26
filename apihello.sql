@@ -55,6 +55,59 @@ CREATE TABLE `files` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `groups`
+--
+
+DROP TABLE IF EXISTS `groups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `groups` (
+                         `id` mediumint(9) NOT NULL AUTO_INCREMENT,
+                         `photo` longtext DEFAULT NULL,
+                         `name` char(80) NOT NULL,
+                         `description` text DEFAULT NULL,
+                         `creation` int(10) unsigned NOT NULL,
+                         PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `gfiles` Group Files
+--
+
+DROP TABLE IF EXISTS `gfiles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gfiles` (
+                         `id` mediumint(9) NOT NULL AUTO_INCREMENT,
+                         `uuid` char(36) NOT NULL UNIQUE,
+                         `from_uuid` char(36) NOT NULL,
+                         `to_uuid` char(36) NOT NULL,
+                         `content` longtext NOT NULL,
+                         `sent` int(10) unsigned NOT NULL,
+                         PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `gmessages` Group Messages
+--
+
+DROP TABLE IF EXISTS `gmessages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gmessages` (
+                            `id` mediumint(9) NOT NULL AUTO_INCREMENT,
+                            `uuid` char(36) NOT NULL UNIQUE,
+                            `from_uuid` char(36) NOT NULL,
+                            `to_uuid` char(36) NOT NULL,
+                            `content` longtext NOT NULL,
+                            `sent` int(10) unsigned NOT NULL,
+                            PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `losts`
 --
 
@@ -89,6 +142,26 @@ CREATE TABLE `messages` (
   `received` int(10) unsigned DEFAULT NULL,
   `read` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `participants`
+--
+
+DROP TABLE IF EXISTS `participants`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `participants` (
+                         `id` mediumint(9) NOT NULL AUTO_INCREMENT,
+                         `user` char(36) NOT NULL UNIQUE,
+                         `group` char(36) NOT NULL,
+                         `is_active` boolean NOT NULL,
+                         `is_admin` boolean NOT NULL,
+                         `is_super` boolean NOT NULL,
+                         `last_received` char(36) DEFAULT NULL,
+                         `last_read` char(36) DEFAULT NULL,
+                         PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

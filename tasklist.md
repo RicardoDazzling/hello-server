@@ -20,7 +20,8 @@
 - [x] Replace sended=>sent, readed=>read, openned=>opened;
 - [x] Separated retrieve_all to [sender](## "received, read and opened filters") and [receiver](## "sent and no filter.");
 - [x] Filter value;
-- [ ] Group route, [group entity, group service](## "uuid, photo, name, description, creation_date, code") and group DAL;
-- [ ] GroupMessage route, [group message entity, group message service](## "from, to, content, send, received, read") and [group message DAL](## "will a month in the database");
-- [ ] GroupParticipant route, [group participant entity, group participant service](## "participant, group"), group participant DAL;
+- [x] Group route, [group entity, group service](## "uuid, photo, name, description, creation") and group DAL;
+- [x] Update message route, [message entity, message service](## "from, to, content, sent, received, read and is_group") and [message DAL](## "will a month in the database");
+- [x] Update file route, [file entity, file service](## "from, to, content, sent, received, read, opened (don't will be used to groups) and is_group") and [file DAL](## "will a week in the database");
+- [x] Participant route, [participant entity, participant service](## "user, group, is_active, is_admin, is_super, last_receive, last_read"), participant DAL;
 - [ ] Debug.

@@ -55,7 +55,6 @@ final class UserDAL
         return (new User())->setData($bean->export());
     }
 
-
     /**
      * @return User[]|null[]
      */
@@ -66,6 +65,23 @@ final class UserDAL
         return array_map(function (object $bean): object {
             return (new User())->setData($bean->export());
         }, $users);
+    }
+
+    /**
+     * Get the email list from a list of UUID's
+     * @param array $uuid_list
+     * @return string[]|null[]
+     */
+    public static function get_email_from_uuid(array $uuid_list): array
+    {
+        $query = preg_replace( '/\s+/', ' ',  "
+            SELECT `email`
+            FROM " . self::TABLE_NAME . "
+            WHERE
+                `uuid` IN ('" . join("', '", $uuid_list) . "')
+        ");
+        $email_list = R::getAll($query);
+        return array_map(function (array $data) {return $data['email'];}, $email_list);
     }
 
     /**

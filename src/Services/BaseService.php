@@ -132,7 +132,7 @@ class BaseService
      */
     public function _retrieve(string $uuid): mixed
     {
-        if (!v::uuid()->validate($uuid)) throw new ValidationException("Invalid user UUID");
+        if (!v::uuid()->validate($uuid)) throw new ValidationException("Invalid UUID");
 
         $entity = static::dalGet($uuid);
 

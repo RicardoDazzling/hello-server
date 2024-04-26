@@ -17,6 +17,7 @@ try
         'login' => require_once 'login.php',
         'register' => require_once 'register.php',
         'user' => require_once 'user.php',
+        'group' => require_once 'group.php',
         'message', 'file', 'writing', 'lost', 'call' => require_once 'base.php',
         'verify' => require_once 'verify.php',
         'callback' => MailerService::callback(),

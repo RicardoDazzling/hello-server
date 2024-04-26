@@ -3,7 +3,6 @@ namespace DazzRick\HelloServer\Services;
 
 use DazzRick\HelloServer\DAL\UserDAL;
 use DazzRick\HelloServer\Entity\User;
-use DazzRick\HelloServer\Exceptions\InternalServerException;
 use DazzRick\HelloServer\Exceptions\ValidationException;
 use DazzRick\HelloServer\Validation\UserValidation;
 use PH7\JustHttp\StatusCode;

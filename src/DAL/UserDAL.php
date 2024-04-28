@@ -75,13 +75,16 @@ final class UserDAL
     public static function get_email_from_uuid(array $uuid_list): array
     {
         $query = preg_replace( '/\s+/', ' ',  "
-            SELECT `email`
+            SELECT `uuid`, `email`
             FROM " . self::TABLE_NAME . "
             WHERE
                 `uuid` IN ('" . join("', '", $uuid_list) . "')
         ");
         $email_list = R::getAll($query);
-        return array_map(function (array $data) {return $data['email'];}, $email_list);
+        $new_array = [];
+        for ($i = 0; $i < count($email_list); $i++)
+            $new_array[$email_list[$i]['uuid']] = $email_list[$i]['email'];
+        return $new_array;
     }
 
     /**

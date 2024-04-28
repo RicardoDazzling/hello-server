@@ -25,11 +25,11 @@ enum GroupAction: string
         global $jwt;
         $token = getallheaders()['Web-Token'] ?? null;
         $jwt = TokenDAL::validate($token);
-        $subresource = $_REQUEST['subresource'] ?? null;
+        $subresource = empty($_REQUEST['subresource']) ? null : $_REQUEST['subresource'];
         if(!is_null($subresource) && !in_array($subresource, ['participant', 'file', 'message']))
             throw new BadRequestException("Subresource '$subresource' does not exist.");
-        $email = $_REQUEST['email'] ?? null;
-        $uuid = $_REQUEST['uuid'] ?? null;
+        $email = empty($_REQUEST['email']) ? null : $_REQUEST['email'];
+        $uuid = empty($_REQUEST['uuid']) ? null : $_REQUEST['uuid'];
         $service = match ($subresource){
             'participant' => new ParticipantService($email, $uuid),
             'file' => new GFileService(),
@@ -59,7 +59,7 @@ enum GroupAction: string
                     break;
                 case self::GET:
                     if (empty($uuid)) $response = $service->retrieve_all();
-                    else if ($subresource === 'participant' && empty($email)) $service->retrieve_all();
+                    else if ($subresource === 'participant' && empty($email)) $response = $service->retrieve_all();
                     else $response = $service->retrieve($uuid);
                     break;
                 case self::DELETE:

@@ -13,25 +13,21 @@ class Message extends GMessage
 
     public function __get(string $name)
     {
-        $parent = parent::__get($name);
-        if($parent !== false) return $parent;
         return match($name)
         {
             'received' => $this->getReceived(),
             'read' => $this->getRead(),
-            default => throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name))
+            default => parent::__get($name)
         };
     }
 
     public function __set(string $name, mixed $value)
     {
-        $parent = parent::__set($name, $value);
-        if($parent !== false) return $parent;
         return match($name)
         {
             'received' => $this->setReceived($value),
             'read' => $this->setRead($value),
-            default => throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name))
+            default => parent::__set($name, $value)
         };
     }
 

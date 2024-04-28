@@ -14,7 +14,7 @@ class MessageService extends BaseService implements Serviceable
     protected static function populateCreateEntity(array $data): Message
     {
         return parent::populateCreateEntity($data)
-            ->setSend(intdiv(time(), 60));
+            ->setSent(intdiv(time(), 60));
     }
 
     public function create(array $data): Message { return parent::_create($data); }

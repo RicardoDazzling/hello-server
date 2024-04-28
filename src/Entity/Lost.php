@@ -17,7 +17,7 @@ class Lost extends Base
         return match($name)
         {
             'type' => $this->getType(),
-            'sent' => $this->getSend(),
+            'sent' => $this->getSent(),
             default => throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name))
         };
     }
@@ -29,7 +29,7 @@ class Lost extends Base
         return match($name)
         {
             'type' => $this->setType($value),
-            'sent' => $this->setSend($value),
+            'sent' => $this->setSent($value),
             default => throw new InvalidPropertyOrMethod(sprintf("Unknown property: %s", $name))
         };
     }
@@ -51,7 +51,7 @@ class Lost extends Base
 
     public function setType(mixed $type): static { $this->_type = $type; return $this; }
 
-    public function getSend(): ?string { return $this->_sent; }
+    public function getSent(): ?string { return $this->_sent; }
 
-    public function setSend(mixed $sent): static { $this->_sent = $sent; return $this; }
+    public function setSent(mixed $sent): static { $this->_sent = $sent; return $this; }
 }

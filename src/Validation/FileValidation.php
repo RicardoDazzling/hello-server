@@ -17,7 +17,7 @@ trait FileValidation
         $new_data = self::isBaseCreationSchemaValid($data);
         if(!array_key_exists('content', $new_data))
             throw new ValidationException('Missing "content" inside the payload: '. "\n". json_encode($data));
-        if(!v::base64()->length(1)->validate(trim($new_data['content'])))
+        if(!v::base64()->length(1)->validate(explode(',', trim($new_data['content']))[1]))
             throw new ValidationException('Content is empty or is not a base64');
         return $new_data;
     }

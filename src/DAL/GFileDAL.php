@@ -4,5 +4,5 @@ namespace DazzRick\HelloServer\DAL;
 
 class GFileDAL extends GBaseDAL
 {
-    public const TABLE_NAME = 'gfile';
+    public const TABLE_NAME = 'gfiles';
 }

@@ -5,6 +5,7 @@ namespace DazzRick\HelloServer\DAL;
 use DazzRick\HelloServer\Entity\GFile;
 use DazzRick\HelloServer\Entity\GMessage;
 use DazzRick\HelloServer\Exceptions\BadRequestException;
+use DazzRick\HelloServer\Exceptions\InternalServerException;
 use DazzRick\HelloServer\Exceptions\UnAuthorizedException;
 use RedBeanPHP\R;
 use RedBeanPHP\RedException\SQL;
@@ -20,7 +21,7 @@ class GBaseDAL
      */
     public static function create(GFile|GMessage $entity): GFile|GMessage
     {
-        $bean = R::dispense(self::TABLE_NAME);
+        $bean = R::dispense(static::TABLE_NAME);
         $bean->uuid = $entity->getUuid();
         $bean->from_uuid = $entity->getFromUuid();
         $bean->to_uuid = $entity->getToUuid();
@@ -42,11 +43,9 @@ class GBaseDAL
         $bindings = ['uuid' => $uuid];
         $get = R::getRow(
             "SELECT m.*,
-                        f.email AS from_email,
-                        t.email AS to_email
-                 FROM $table_name m
-                     INNER JOIN $users_table_name f ON m.from_uuid = f.uuid
-                     INNER JOIN $users_table_name t ON m.to_uuid = t.uuid
+                        f.email AS from_email
+                 FROM `$table_name` m
+                     INNER JOIN `$users_table_name` f ON m.from_uuid = f.uuid
                  WHERE m.uuid = :uuid", $bindings);
         if (!empty($get)) return $get;
         else return NULL;
@@ -72,14 +71,19 @@ class GBaseDAL
         $participants_table_name = ParticipantDAL::TABLE_NAME;
         $query = preg_replace('/\s+/', ' ', "
             SELECT m.*,
-                f.email AS from_email,
-            FROM $participants_table_name p
-                INNER JOIN $groups_table_name g ON p.group = g.uuid
-                INNER JOIN $table_name m ON p.group = m.to_uuid
-                INNER JOIN $users_table_name f ON m.from_uuid = f.uuid
+                f.email AS from_email
+            FROM `$participants_table_name` p
+                INNER JOIN `$groups_table_name` g ON p.group = g.uuid
+                INNER JOIN `$table_name` m ON p.group = m.to_uuid
+                INNER JOIN `$users_table_name` f ON m.from_uuid = f.uuid
             WHERE p.user = '$to' AND p.is_active = true
             ORDER BY m.id");
-        $messages = R::getAll($query);
+        try {
+            $messages = R::getAll($query);
+        }catch (SQL $sql){
+            throw new InternalServerException(
+                "Error while get all messages. SQL: '$query'; Exception: '" . $sql->getMessage() . "'");
+        }
         $lambda = function (array $bean): object { return static::new_instance()->setData($bean); };
         if (count($messages) <= 0) return [];
         else return array_map($lambda, $messages);
@@ -100,7 +104,13 @@ class GBaseDAL
             throw new UnAuthorizedException("Entities can only be removed by sender.");
         $table_name = static::TABLE_NAME;
         $id = $bean['id'];
-        $works = (bool)R::exec("DELETE FROM $table_name WHERE id=$id;");
+        $query = "DELETE FROM $table_name WHERE id=$id";
+        try {
+            $works = (bool) R::exec($query);
+        }catch (SQL $sql){
+            throw new InternalServerException(
+                "Error while get all messages. SQL: '$query'; Exception: '" . $sql->getMessage() . "'");
+        }
 
         if ($works) return $entity;
         else throw new SQL('Remove error!');
@@ -122,19 +132,30 @@ class GBaseDAL
 
         // save the user
         $table_name = static::TABLE_NAME;
-        $id = R::exec("UPDATE $table_name SET `content`=$content WHERE uuid='$uuid'");
+        $query = "UPDATE `$table_name` SET `content`='$content' WHERE `uuid`='$uuid'";
+        try {
+            $id = R::exec($query);
+        }catch (SQL $sql){
+            throw new InternalServerException(
+                "Error while get all messages. SQL: '$query'; Exception: '" . $sql->getMessage() . "'");
+        }
 
         if(gettype($id) === 'integer' || gettype($id) === 'string') return $entity->setId($id);
         else return static::emptyEntity();
     }
 
-    public static function received(): void
+    public static function received($last_message): void
     {
         $to = $GLOBALS['jwt']->getUuid();
         $participants_table_name = ParticipantDAL::TABLE_NAME;
-        $received = intdiv(time(), 60);
 
-        R::exec("UPDATE $participants_table_name SET last_received=$received WHERE `user`='$to' AND is_active=true");
+        $query = "UPDATE $participants_table_name SET last_received='$last_message' WHERE `user`='$to' AND is_active=true";
+        try {
+            R::exec($query);
+        }catch (SQL $sql){
+            throw new InternalServerException(
+                "Error while get all messages. SQL: '$query'; Exception: '" . $sql->getMessage() . "'");
+        }
     }
 
     public static function clean(): void

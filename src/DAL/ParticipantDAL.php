@@ -4,6 +4,7 @@ namespace DazzRick\HelloServer\DAL;
 
 use DazzRick\HelloServer\Entity\Participant;
 use DazzRick\HelloServer\Exceptions\BadRequestException;
+use DazzRick\HelloServer\Exceptions\InternalServerException;
 use RedBeanPHP\R;
 use RedBeanPHP\RedException\SQL;
 
@@ -16,6 +17,8 @@ class ParticipantDAL
      */
     public static function create(Participant $entity): Participant
     {
+        if (!self::get($entity->getUser(), $entity->getGroup())->isEmpty())
+            throw new BadRequestException('Participant already exist.');
         $bean = R::dispense(self::TABLE_NAME);
         $bean->user = $entity->getUser();
         $bean->group = $entity->getGroup();
@@ -36,7 +39,7 @@ class ParticipantDAL
     private static function _find(string $user, string $group): NULL|\RedBeanPHP\OODBBean
     {
         $bindings = ['user' => $user, 'group' => $group];
-        return R::findOne(self::TABLE_NAME, 'user = :user AND group = :group ', $bindings);
+        return R::findOne(self::TABLE_NAME, '`user` = :user AND `group` = :group ', $bindings);
     }
 
     public static function get(string $user, string $group): Participant
@@ -53,12 +56,18 @@ class ParticipantDAL
      */
     public static function getAll(?string $user = null, ?string $group = null): array
     {
+        $filter = empty($_REQUEST['filter']) ? null : $_REQUEST['filter'];
+        if (is_null($filter))
+            $filter_string = '';
+        else if (!in_array($filter, ['is_active', 'is_admin', 'is_super']))
+            throw new BadRequestException("Unknown filter: '$filter'");
+        else $filter_string = "AND `$filter` = true";
         if (!is_null($user) && !is_null($group))
             throw new BadRequestException('Only group or user can be searched.');
         else if (!is_null($group))
-            $participants = R::findAll(self::TABLE_NAME, "group = '$group'");
+            $participants = R::findAll(self::TABLE_NAME, "`group` = '$group' $filter_string");
         else if(!is_null($user))
-            $participants = R::findAll(self::TABLE_NAME, "user = '$user'");
+            $participants = R::findAll(self::TABLE_NAME, "`user` = '$user' $filter_string");
         else throw new BadRequestException('Group and User are null.');
 
         if (count($participants) <= 0) return [];
@@ -114,9 +123,9 @@ class ParticipantDAL
     public static function update_super(string $group): void
     {
         $bindings = ['group' => $group];
-        $new_super = R::findOne(self::TABLE_NAME, 'group = :group AND is_admin = true', $bindings);
+        $new_super = R::findOne(self::TABLE_NAME, '`group` = :group AND `is_admin` = true', $bindings);
         if (is_null($new_super))
-            $new_super = R::findOne(self::TABLE_NAME, 'group = :group AND is_active = true', $bindings);
+            $new_super = R::findOne(self::TABLE_NAME, '`group` = :group AND `is_active` = true', $bindings);
         if (is_null($new_super)) {
             GroupDAL::remove($group);
             self::remove_all_from_group($group);
@@ -134,7 +143,12 @@ class ParticipantDAL
             DELETE FROM " . self::TABLE_NAME . "
             WHERE `group`='" . $group . "'
         ");
-        R::exec($query);
+        try {
+            R::exec($query);
+        } catch (\Exception $e) {
+            $message = "Failed to remove participants! SQL Query: '" . $query . "';\n SQL exception: '" . $e->getMessage() . "'";
+            throw new InternalServerException($message);
+        }
     }
 
     /**
@@ -146,7 +160,7 @@ class ParticipantDAL
         $query = preg_replace('/\s+/', ' ', "
             SELECT `group`
             FROM " . self::TABLE_NAME . "
-            WHERE `uuid`='" . $jwt->getUuid() . "'
+            WHERE `user`='" . $jwt->getUuid() . "'
         ");
         $groups = R::getAll($query);
         return array_map(function (array $data) { return $data['group']; }, $groups);

@@ -15,10 +15,10 @@ trait CallValidation
         $new_data = self::isBaseCreationSchemaValid($data);
         if(!array_key_exists('audio', $new_data))
             throw new ValidationException('Missing "audio" inside the payload: '. "\n". json_encode($data));
-        if(!v::base64()->validate($new_data['audio']))
+        if(!v::base64()->validate(explode(',', trim($new_data['audio']))[1]))
             throw new ValidationException('Invalid audio.');
         if(array_key_exists('video', $new_data))
-            if(!v::base64()->validate($new_data['video']))
+            if(!v::base64()->validate(explode(',', trim($new_data['video']))[1]))
                 throw new ValidationException('Invalid video.');
         return $new_data;
     }
@@ -28,12 +28,12 @@ trait CallValidation
         if(array_key_exists('audio', $data))
             if($classification !== self::SENDER)
                 throw new BadRequestException('The call audio can only be edited by sender.');
-            if(!v::base64()->validate($data['audio']))
+            if(!v::base64()->validate(explode(',', trim($data['audio']))[1]))
                 throw new ValidationException('Invalid audio.');
         if(array_key_exists('video', $data))
             if($classification !== self::SENDER)
                 throw new BadRequestException('The call video can only be edited by sender.');
-            if(!v::base64()->validate($data['video']))
+            if(!v::base64()->validate(explode(',', trim($data['video']))[1]))
                 throw new ValidationException('Invalid video.');
         return $data;
     }

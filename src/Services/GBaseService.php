@@ -14,6 +14,7 @@ use DazzRick\HelloServer\Exceptions\ValidationException;
 use DazzRick\HelloServer\Validation\GBaseValidation;
 use PH7\JustHttp\StatusCode;
 use PH7\PhpHttpResponseHeader\Http;
+use Ramsey\Uuid\Uuid;
 use Respect\Validation\Validator as v;
 
 class GBaseService implements Serviceable
@@ -61,7 +62,10 @@ class GBaseService implements Serviceable
     {
         $data = static::isCreationSchemaValid($data);
 
-        $entity = static::new_instance()->setData($data);
+        $entity = static::new_instance()
+            ->setData($data)
+            ->setUuid(Uuid::uuid4()->toString())
+            ->setSent(intdiv(time(), 60));
 
         $entity = static::new_dal_instance()->create($entity);
         if ($entity->isEmpty()) Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
@@ -73,8 +77,8 @@ class GBaseService implements Serviceable
         $user_uuid = $GLOBALS['jwt']->getUuid();
         $dal = static::new_dal_instance();
         $entities = $dal->getAll($user_uuid);
-        $dal->received();
         if(count($entities) <= 0) return [];
+        $dal->received(end($entities)->getUuid());
         return array_map(function (mixed $entity): array { return $entity->getData(true); }, $entities);
     }
 
@@ -98,7 +102,7 @@ class GBaseService implements Serviceable
         if ($oldEntity->isEmpty()) throw new ValidationException('UUID doens\'t exists');
         $classification = self::userClassification($oldEntity);
 
-        $postBody = static::isUpdateSchemaValid($postBody, $classification, $oldEntity);
+        static::isUpdateSchemaValid($postBody, $classification, $oldEntity);
 
         $entity = static::new_instance()->setData($postBody)->setUuid($uuid);
         $entity = $dal->update($entity);

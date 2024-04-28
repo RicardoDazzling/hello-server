@@ -7,6 +7,7 @@ use DazzRick\HelloServer\DAL\ParticipantDAL;
 use DazzRick\HelloServer\Entity\Group;
 use DazzRick\HelloServer\Entity\Participant;
 use DazzRick\HelloServer\Exceptions\InternalServerException;
+use DazzRick\HelloServer\Exceptions\UnAuthorizedException;
 use DazzRick\HelloServer\Exceptions\ValidationException;
 use DazzRick\HelloServer\Validation\GroupValidation;
 use PH7\JustHttp\StatusCode;
@@ -25,9 +26,9 @@ class GroupService implements Serviceable
         $group = new Group();
         $group
             ->setUuid(Uuid::uuid4()->toString())
-            ->setPhoto($data['photo'])
-            ->setName($data['name'])
-            ->setDescription($data['description'])
+            ->setPhoto($data['photo'] ?? null)
+            ->setName($data['name'] ?? null)
+            ->setDescription($data['description'] ?? null)
             ->setCreation(intdiv(time(), 60));
 
         $group = GroupDAL::create($group);
@@ -57,7 +58,7 @@ class GroupService implements Serviceable
         if(count($groups) <= 0) return [];
         return array_map(function (Group $group): array {
             return $group->getData();
-        }, $groups);
+        }, array_values($groups));
     }
 
     public function retrieve(string $uuid): Group
@@ -76,6 +77,7 @@ class GroupService implements Serviceable
         self::isUpdateSchemaValid($postBody);
 
         $group = (new Group())->setData($postBody)->setUuid($uuid);
+        self::userVerification($uuid, true);
         $group = GroupDAL::update($group);
 
         if ($group->isEmpty()) Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
@@ -86,6 +88,7 @@ class GroupService implements Serviceable
     {
         if (is_null($uuid)) throw new ValidationException("UUID is required.");
         if (!v::uuid()->validate($uuid)) throw new ValidationException("Invalid user UUID");
+        self::userVerification($uuid, true, true);
         $entity = GroupDAL::remove($uuid);
         if ($entity->isEmpty()) throw new ValidationException("Unknown user.");
         else {
@@ -93,7 +96,7 @@ class GroupService implements Serviceable
                 ParticipantDAL::remove_all_from_group($uuid);
             } catch (\Exception $e) {
                 GroupDAL::create($entity);
-                throw $e;
+                throw new InternalServerException("Remove participants failed.");
             }
         }
         return $entity;

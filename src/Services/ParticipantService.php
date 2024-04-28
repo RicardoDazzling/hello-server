@@ -19,9 +19,9 @@ class ParticipantService implements Serviceable
 {
     use ParticipantValidation;
 
-    private string $email;
+    private ?string $email;
 
-    private string $group_uuid;
+    private ?string $group_uuid;
 
     public function __construct(?string $email = null, ?string $group_uuid = null) {
         $this->group_uuid = $group_uuid;
@@ -37,6 +37,7 @@ class ParticipantService implements Serviceable
 
         $participant = ParticipantDAL::create($participant);
         if ($participant->isEmpty()) Http::setHeadersByCode(StatusCode::INTERNAL_SERVER_ERROR);
+        else $participant->setUser(empty($data['user'])?$GLOBALS['jwt']->getEmail():$data['user']);
         return $participant;
     }
 
@@ -45,14 +46,15 @@ class ParticipantService implements Serviceable
         $participants = empty($this->group_uuid)
             ?ParticipantDAL::getAll(user: $GLOBALS['jwt']->getUuid())
             :ParticipantDAL::getAll(group: $this->group_uuid);
+        if (count($participants) <= 0) return [];
         $uuid_list = array_map(function (Participant $participant) { return $participant->getUser(); }, $participants);
         $users_emails = UserDAL::get_email_from_uuid($uuid_list);
-        if (count($participants) <= 0) return [];
-        return array_map(function (Participant $participant, string $email): array {
-            $data = $participant->getData();
-            $data['user'] = $email;
-            return $data;
-        }, $participants, $users_emails);
+        $new_array = [];
+        $length = count($uuid_list);
+        $participants = array_values($participants);
+        for ($i = 0; $i < $length; $i++)
+            $new_array[] = $participants[$i]->setUser($users_emails[$participants[$i]->getUser()])->getData();;
+        return $new_array;
     }
 
     public function retrieve(string $uuid): Participant
@@ -63,17 +65,20 @@ class ParticipantService implements Serviceable
         $participant = ParticipantDAL::get(user: $user, group: $uuid);
 
         if ($participant->isEmpty()) Http::setHeadersByCode(StatusCode::NOT_FOUND);
+        else $participant->setUser(empty($this->email) ? $GLOBALS['jwt']->getEmail() : $this->email);
         return $participant;
     }
 
     /**
      * @param array $postBody
-     * @param string|null $email
+     * @param string|null $uuid
      * @return Participant
      * @throws SQL
      */
     public function update(array $postBody, ?string $uuid = null): Participant
     {
+        # if(is_null($this->group_uuid) && array_key_exists('group', $postBody))
+        #     throw new BadRequestException('The group UUID need to be set by query argument, and not PostBody!');
         if(!empty($this->email)){
             $user = UserDAL::get_by_email($this->email);
             if($user->isEmpty())
@@ -85,7 +90,7 @@ class ParticipantService implements Serviceable
             $user_id = $GLOBALS['jwt']->getUuid();
             $postBody['user'] = $user_id;
         }
-        $postBody['group'] = $uuid;
+        $postBody['group'] = $this->group_uuid;
         $old_entity = self::isUpdateSchemaValid($postBody);
 
         $participant = (new Participant())->setData($postBody);

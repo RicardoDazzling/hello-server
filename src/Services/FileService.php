@@ -19,7 +19,7 @@ class FileService extends BaseService implements Serviceable
     protected static function populateCreateEntity(array $data): File
     {
         return parent::populateCreateEntity($data)
-            ->setSend(intdiv(time(), 60));
+            ->setSent(intdiv(time(), 60));
     }
 
     /**

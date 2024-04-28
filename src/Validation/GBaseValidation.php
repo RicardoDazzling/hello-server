@@ -30,7 +30,7 @@ trait GBaseValidation
         if(!array_key_exists('content', $data))
             throw new ValidationException('Missing "content" inside the payload: '. "\n". json_encode($data));
         if(static::TYPE === GFileDAL::TABLE_NAME)
-            if(!v::base64()->length(1)->validate(trim($data['content'])))
+            if(!v::base64()->length(1)->validate(explode(',', trim($data['content']))[1]))
                 throw new ValidationException('Content is empty or is not a base64');
         if(static::TYPE === GMessageDAL::TABLE_NAME)
             if(!v::stringType()->length(1)->validate(trim($data['content'])))
@@ -39,14 +39,14 @@ trait GBaseValidation
         return $data;
     }
 
-    public static function isUpdateSchemaValid(array $data, string $classification, GMessage|GFile $old_entity): array
+    public static function isUpdateSchemaValid(array $data, string $classification, GMessage|GFile $old_entity): void
     {
         if(!array_key_exists('content', $data))
             throw new ValidationException('Missing "content" inside the payload: '. "\n". json_encode($data));
         if($classification !== static::SENDER)
             throw new ValidationException('Only the sender can update messages');
         if(static::TYPE === GFileDAL::TABLE_NAME)
-            if(!v::base64()->length(1)->validate(trim($data['content'])))
+            if(!v::base64()->length(1)->validate(explode(',', trim($data['content']))[1]))
                 throw new ValidationException('Content is empty or is not a base64');
         if(static::TYPE === GMessageDAL::TABLE_NAME)
             if(!v::stringType()->length(1)->validate(trim($data['content'])))

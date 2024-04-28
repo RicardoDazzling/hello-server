@@ -63,6 +63,7 @@ DROP TABLE IF EXISTS `groups`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `groups` (
                          `id` mediumint(9) NOT NULL AUTO_INCREMENT,
+                         `uuid` char(36) NOT NULL UNIQUE,
                          `photo` longtext DEFAULT NULL,
                          `name` char(80) NOT NULL,
                          `description` text DEFAULT NULL,
@@ -154,7 +155,7 @@ DROP TABLE IF EXISTS `participants`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `participants` (
                          `id` mediumint(9) NOT NULL AUTO_INCREMENT,
-                         `user` char(36) NOT NULL UNIQUE,
+                         `user` char(36) NOT NULL,
                          `group` char(36) NOT NULL,
                          `is_active` boolean NOT NULL,
                          `is_admin` boolean NOT NULL,

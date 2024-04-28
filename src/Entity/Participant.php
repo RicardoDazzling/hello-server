@@ -104,11 +104,11 @@ class Participant implements Entitable
         else { $this->_is_super = $new_value; return $this; }
     }
 
-    public function getLastReceived(): ?int { return $this->_last_received; }
+    public function getLastReceived(): ?string { return $this->_last_received; }
 
-    public function setLastReceived(?int $last_received): static { $this->_last_received = $last_received; return $this; }
+    public function setLastReceived(?string $last_received): static { $this->_last_received = $last_received; return $this; }
 
-    public function getLastRead(): ?int { return $this->_last_read; }
+    public function getLastRead(): ?string { return $this->_last_read; }
 
-    public function setLastRead(?int $last_read): static { $this->_last_read = $last_read; return $this; }
+    public function setLastRead(?string $last_read): static { $this->_last_read = $last_read; return $this; }
 }
